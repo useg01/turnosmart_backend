@@ -47,11 +47,22 @@ public class TramiteController {
 
     @GetMapping("/abogado/dashboard")
     public String dashboardAbogado(HttpSession session, Model model) {
-        // El interceptor ya validó que hay sesión y que es ABOGADO
-        User user = (User) session.getAttribute("loggedUser");
+        // 1. Obtenemos el usuario logueado (que es una cuenta de tipo abogado/notario)
+        User loggedUser = (User) session.getAttribute("loggedUser");
 
-        List<Appointment> citas = appointmentRepository.findByLawyerId(user.getId());
-        model.addAttribute("citasHoy", citas != null ? citas : new ArrayList<>());
+        // 2. Buscamos las citas usando el ID del usuario directamente en la Query
+        // Tu AppointmentRepository usa: WHERE a.lawyer.id = :lawyerId.
+        // Como en el script de inserción manual 'lawyers.id' coincide con 'users.id', usamos loggedUser.getId().
+        List<Appointment> tramites = appointmentRepository.findByLawyerId(loggedUser.getId());
+
+        // 3. Multi-inyectamos al modelo para blindar contra cualquier nombre que use tu HTML (tramites, citas, citasHoy)
+        List<Appointment> listaSegura = (tramites != null) ? tramites : new ArrayList<>();
+
+        model.addAttribute("tramites", listaSegura);
+        model.addAttribute("citas", listaSegura);
+        model.addAttribute("citasHoy", listaSegura);
+        model.addAttribute("total", listaSegura.size());
+
         return "abogado/dashboard";
     }
 

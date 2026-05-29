@@ -96,14 +96,13 @@
                         <th>Ticket</th>
                         <th>Cliente</th>
                         <th>Trámite</th>
-                        <th>Fecha/Hora</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:if="${#lists.isEmpty(citasHoy)}">
-                        <td colspan="6" class="text-center py-5 text-muted">
+                        <td colspan="5" class="text-center py-5 text-muted">
                             <i class="bi bi-archive fs-1 d-block mb-2"></i>
                             No hay trámites pendientes asignados para hoy.
                         </td>
@@ -115,7 +114,6 @@
                             <small class="text-muted" th:text="${cita.client.dni}">DNI</small>
                         </td>
                         <td th:text="${cita.procedureType.name}">Poder Fuera de Registro</td>
-                        <td th:text="${cita.appointmentDate + ' ' + cita.appointmentTime}">11/05 09:00</td>
                         <td>
                             <span class="status-pill"
                                   th:classappend="${cita.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning' : (cita.status.name() == 'CONFORME' ? 'bg-success-subtle text-success' : 'bg-info-subtle text-info')}"

@@ -60,8 +60,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
      * Buscar trámites asignados a un abogado.
      * JOIN FETCH a.client es vital para que el Abogado vea los nombres de sus clientes en la tabla.
      */
-    @Query("SELECT a FROM Appointment a JOIN FETCH a.client JOIN FETCH a.procedureType WHERE a.lawyer.id = :lawyerId")
-    List<Appointment> findByLawyerId(@Param("lawyerId") Long lawyerId);
+    @Query("SELECT a FROM Appointment a " +
+            "JOIN FETCH a.client " +
+            "JOIN FETCH a.procedureType " +
+            "WHERE a.lawyer.user.id = :userId")
+    List<Appointment> findByLawyerId(@Param("userId") Long userId);
 
     Optional<Appointment> findByTicketNumber(String ticketNumber);
 }
