@@ -36,10 +36,10 @@ public class Appointment {
     @JoinColumn(name = "procedure_type_id", nullable = false)
     private ProcedureType procedureType;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate appointmentDate;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalTime appointmentTime;
 
     private String clientDni;

@@ -74,9 +74,7 @@ public class AppointmentService {
         Lawyer lawyer = lawyerRepo.findById(dto.getLawyerId())
                 .orElseThrow(() -> new BusinessException("El abogado seleccionado no existe."));
 
-        if (appointmentRepo.countByLawyerIdAndAppointmentDate(lawyer.getId(), dto.getDate()) >= 6) {
-            throw new BusinessException("El abogado ya ha completado sus 6 cupos para esta fecha.");
-        }
+        //SE ELIMINÓ: La validación de los 6 cupos diarios porque el cliente ya no elige fecha.
 
         User client = userRepo.findById(clientUserId)
                 .orElseThrow(() -> new BusinessException("Usuario cliente no encontrado."));
@@ -89,13 +87,17 @@ public class AppointmentService {
         app.setClient(client);
         app.setLawyer(lawyer);
         app.setProcedureType(procedure);
+
+        // Aceptarán valores nulos temporalmente hasta que el abogado los programe
         app.setAppointmentDate(dto.getDate());
         app.setAppointmentTime(dto.getTime());
+
+        // Mantenemos el estado inicial en REVISION para que el staff lo evalúe
         app.setStatus(AppointmentStatus.REVISION);
 
         Appointment saved = appointmentRepo.save(app);
 
-        registrarLog(saved, "N/A", "REVISION", "Trámite registrado correctamente.", clientUserId);
+        registrarLog(saved, "N/A", "REVISION", "Trámite registrado correctamente sin fecha programada.", clientUserId);
 
         return new AppointmentResponseDTO(saved.getId(), saved.getTicketNumber(),
                 saved.getAppointmentDate(), saved.getAppointmentTime(), saved.getStatus().name());

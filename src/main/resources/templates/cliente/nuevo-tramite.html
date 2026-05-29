@@ -170,20 +170,7 @@
                                 </option>
                             </select>
                         </div>
-
-                        <!-- 3. Fecha -->
-                        <div class="col-md-6">
-                            <label class="form-label">Fecha de Cita</label>
-                            <input type="date" th:field="*{date}" class="form-control" id="dateInput" required />
-                        </div>
-
-                        <!-- 4. Hora -->
-                        <div class="col-md-6">
-                            <label class="form-label">Horario Sugerido</label>
-                            <input type="time" th:field="*{time}" class="form-control" required />
-                        </div>
-
-                        <!-- 5. Notas -->
+                        
                         <div class="col-12">
                             <label class="form-label">Observaciones Adicionales</label>
                             <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="¿Algún detalle extra que debamos saber?"></textarea>
