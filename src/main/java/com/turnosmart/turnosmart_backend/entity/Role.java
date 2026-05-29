@@ -1,0 +1,16 @@
+package com.turnosmart.turnosmart_backend.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity @Table(name = "roles")
+@Getter @Setter @NoArgsConstructor
+public class Role {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String name;           // ROLE_CLIENTE, ROLE_RECEPCION, ROLE_NOTARIO, ROLE_ADMIN
+
+    private String description;
+}

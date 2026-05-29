@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador | Turnosmart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --main-bg: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        /* Sidebar mejorada */
+        .sidebar {
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #e2e8f0;
+            padding: 1.5rem 1rem;
+            position: sticky;
+            top: 0;
+        }
+        .brand-logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            padding-left: 0.5rem;
+        }
+        .nav-link {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.4rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .nav-link:hover { background: #f1f5f9; color: var(--primary-color); }
+        .nav-link.active { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; }
+
+        /* Tarjetas de Métricas */
+        .card-stat {
+            border: none;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .card-stat:hover { transform: translateY(-5px); }
+        .icon-shape {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        /* Tabla Estilizada */
+        .card-main {
+            border: none;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        .status-pill {
+            padding: 0.35rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-none d-md-block sidebar shadow-sm">
+            <div class="brand-logo">
+                <i class="bi bi-shield-check-fill me-2"></i>Turnosmart
+            </div>
+
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/admin/dashboard}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="mt-4 px-2">
+                    <small class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Gestión Administrativa</small>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/usuarios}" class="nav-link">
+                        <i class="bi bi-people me-2"></i> Gestión Clientes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/abogados}" class="nav-link">
+                        <i class="bi bi-person-workspace me-2"></i> Gestión Abogados
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <!-- Busca el botón de Reportes Globales -->
+                    <a th:href="@{/admin/reportes}" class="nav-link">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span>Reportes Globales</span>
+                    </a>
+                </li>
+
+                <li class="mt-auto px-2 pt-5">
+                    <hr>
+                    <a class="nav-link text-danger" th:href="@{/logout}">
+                        <i class="bi bi-box-arrow-left me-2"></i> Cerrar Sesión
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-5 py-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold mb-0">Panel de Control <span class="badge bg-primary ms-2" style="font-size: 0.5em; vertical-align: middle;">ADMIN</span></h1>
+                    <p class="text-muted small">Métricas del periodo: <span class="fw-bold text-primary" th:text="${currentFilter.toUpperCase()}">MES</span></p>
+                </div>
+
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="btn-group shadow-sm bg-white rounded-3 p-1" style="border: 1px solid #e2e8f0;">
+                        <a th:href="@{/admin/dashboard(filter='dia')}"
+                           th:classappend="${currentFilter == 'dia' ? 'btn-primary text-white' : 'btn-white text-muted'}"
+                           class="btn btn-sm border-0 px-3 fw-600">Hoy</a>
+                        <a th:href="@{/admin/dashboard(filter='semana')}"
+                           th:classappend="${currentFilter == 'semana' ? 'btn-primary text-white' : 'btn-white text-muted'}"
+                           class="btn btn-sm border-0 px-3 fw-600">Semana</a>
+                        <a th:href="@{/admin/dashboard(filter='mes')}"
+                           th:classappend="${currentFilter == 'mes' ? 'btn-primary text-white' : 'btn-white text-muted'}"
+                           class="btn btn-sm border-0 px-3 fw-600">Mes</a>
+                        <a th:href="@{/admin/dashboard(filter='año')}"
+                           th:classappend="${currentFilter == 'año' ? 'btn-primary text-white' : 'btn-white text-muted'}"
+                           class="btn btn-sm border-0 px-3 fw-600">Año</a>
+                    </div>
+
+                    <button class="btn btn-sm btn-outline-danger shadow-sm fw-600">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="card card-stat p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-shape bg-primary bg-opacity-10 text-primary me-3">
+                                <i class="bi bi-clipboard-data fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small mb-0">Total Trámites</h6>
+                                <h4 class="fw-bold mb-0" th:text="${metrics.total}">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card card-stat p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-shape bg-warning bg-opacity-10 text-warning me-3">
+                                <i class="bi bi-hourglass-split fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small mb-0">En Revisión</h6>
+                                <h4 class="fw-bold mb-0" th:text="${metrics.enCurso}">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card card-stat p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-shape bg-danger bg-opacity-10 text-danger me-3">
+                                <i class="bi bi-exclamation-triangle fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small mb-0">Tasa Regularización</h6>
+                                <h4 class="fw-bold mb-0" th:text="${metrics.tasaReg}">0%</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card card-stat p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-shape bg-success bg-opacity-10 text-success me-3">
+                                <i class="bi bi-award fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small mb-0">Eficiencia (Listos)</h6>
+                                <h4 class="fw-bold mb-0" th:text="${metrics.listos}">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-main overflow-hidden border-0">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-list-stars me-2 text-primary"></i>Monitor Global de Trámites</h6>
+                    <span class="badge bg-light text-dark" th:text="${'Resultados: ' + #lists.size(tramites)}">0</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

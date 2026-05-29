@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - TurnoSmart</title>
+    <!-- Bootstrap Icons para mantener la coherencia con el dashboard -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --main-bg: #f8fafc; /* Fondo claro de la captura */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            /* Sombra suave multinivel inspirada en la captura */
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .register-card {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 24px; /* Bordes más redondeados como en la imagen */
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-icon {
+            width: 60px;
+            height: 60px;
+            background: #eff6ff;
+            color: var(--primary-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.75rem;
+        }
+
+        h2 {
+            color: var(--text-main);
+            font-size: 1.85rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Grid de 2 columnas */
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            margin-left: 0.1rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px; /* Redondeado suavizado */
+            font-size: 0.95rem;
+            background-color: var(--input-bg);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .footer-link {
+            grid-column: span 2;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            grid-column: span 2;
+            background-color: #fef2f2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #fecaca;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 600px) {
+            form { grid-template-columns: 1fr; }
+            .full-width, button { grid-column: span 1; }
+            .register-card { padding: 2rem; border-radius: 0; }
+            body { padding: 0; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-card">
+    <div class="header">
+        <div class="brand-icon">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <h2>Crear Cuenta</h2>
+        <p class="subtitle">Complete sus datos para acceder a la plataforma</p>
+    </div>
+
+    <!-- Mensaje de error con icono -->
+    <div th:if="${error}" class="error-msg">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/registro}" th:object="${usuario}" method="post">
+
+        <div class="field-group">
+            <label>DNI</label>
+            <input type="text" th:field="*{dni}" placeholder="8 dígitos" required />
+        </div>
+
+        <div class="field-group">
+            <label>Correo Electrónico</label>
+            <input type="email" th:field="*{email}" placeholder="ejemplo@correo.com" required />
+        </div>
+
+        <div class="field-group">
+            <label>Nombres</label>
+            <input type="text" th:field="*{firstName}" placeholder="Sus nombres" required />
+        </div>
+
+        <div class="field-group">
+            <label>Apellidos</label>
+            <input type="text" th:field="*{lastName}" placeholder="Sus apellidos" required />
+        </div>
+
+        <div class="field-group">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" th:field="*{birthDate}" required />
+        </div>
+
+        <div class="field-group">
+            <label>Género</label>
+            <select th:field="*{gender}" required>
+                <option value="" disabled selected>Seleccione...</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Estado Civil</label>
+            <select th:field="*{civilStatus}" required>
+                <option value="" disabled selected>Seleccione...</option>
+                <option value="Soltero/a">Soltero/a</option>
+                <option value="Casado/a">Casado/a</option>
+                <option value="Divorciado/a">Divorciado/a</option>
+                <option value="Viudo/a">Viudo/a</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Teléfono</label>
+            <input type="text" th:field="*{phone}" placeholder="999 999 999" />
+        </div>
+
+        <div class="field-group full-width">
+            <label>Contraseña</label>
+            <input type="password" th:field="*{password}" placeholder="Mínimo 8 caracteres" required />
+        </div>
+
+        <button type="submit">Finalizar Registro</button>
+
+        <div class="footer-link">
+            ¿Ya tienes una cuenta? <a th:href="@{/login}">Inicia sesión</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

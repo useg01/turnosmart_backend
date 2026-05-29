@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Abogados | Turnosmart</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --main-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        /* Cabecera */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+
+        /* Botón Estilo SaaS */
+        .btn-primary-custom {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.15);
+            transition: all 0.2s;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Tarjeta Principal */
+        .card-modern {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* Tabla Refinada */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background-color: #ffffff;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table tbody td {
+            padding: 1.25rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        /* Avatar de Iniciales */
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: var(--primary-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-right: 12px;
+        }
+
+        /* Pills de Estado */
+        .specialty-pill {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        /* Botón Editar Minimalista */
+        .btn-edit {
+            color: var(--text-muted);
+            background-color: #f1f5f9;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-edit:hover {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .dni-text {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <!-- Cabecera -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-house-door me-1"></i> Volver al Panel
+            </a>
+            <h2 class="d-inline-block fw-bold mb-0">
+                <i class="bi bi-person-badge me-2"></i> Personal Jurídico
+            </h2>
+        </div>
+
+        <a th:href="@{/admin/abogados/nuevo}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Registrar Nuevo
+        </a>
+    </div>
+
+    <!-- Contenido -->
+    <div class="card-modern">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Especialista</th>
+                    <th>Documento (DNI)</th>
+                    <th>Especialidad</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="abogado : ${abogados}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <!-- Avatar con iniciales dinámicas -->
+                            <div class="avatar-circle"
+                                 th:text="${abogado.user.firstName.substring(0,1) + abogado.user.lastName.substring(0,1)}">
+                                JD
+                            </div>
+                            <div>
+                                <span class="fw-bold d-block" th:text="${abogado.user.firstName + ' ' + abogado.user.lastName}">Nombre Apellido</span>
+                                <span class="text-muted small" style="font-size: 0.75rem;">Colegiado Activo</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="dni-text" th:text="${abogado.user.dni}">00000000</span>
+                    </td>
+                    <td>
+                        <span class="specialty-pill" th:text="${abogado.specialization}">Derecho Civil</span>
+                    </td>
+                    <td class="text-end">
+                        <a th:href="@{/admin/abogados/editar/{id}(id=${abogado.id})}" class="btn-edit">
+                            <i class="bi bi-pencil-square me-1"></i>Editar
+                        </a>
+                    </td>
+                </tr>
+                <!-- Caso: Lista vacía -->
+                <tr th:if="${#lists.isEmpty(abogados)}">
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                        No hay abogados registrados en el sistema.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes - Turnosmart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --main-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        .header-section {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .count-badge {
+            background-color: #e0e7ff;
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .card-table {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .table thead {
+            background-color: #f9fafb;
+        }
+
+        .table thead th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: var(--text-main);
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .avatar-circle {
+            width: 38px;
+            height: 38px;
+            background: #f1f5f9;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-right: 12px;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: var(--text-muted);
+            margin-left: 4px;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-delete:hover {
+            background: #ef4444 !important;
+            border-color: #ef4444 !important;
+            color: white !important;
+        }
+
+        /* Estilos para el Modal tipo Card */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: #fee2e2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+
+    <div class="header-section d-flex justify-content-between align-items-center">
+        <div class="header-section d-flex justify-content-between align-items-start">
+            <div>
+                <a th:href="@{/admin/dashboard}" class="text-decoration-none small fw-600 text-primary mb-2 d-inline-block">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                </a>
+                <h2 class="page-title mb-1">
+                    <i class="bi bi-people-fill text-primary me-2"></i> Cartera de Clientes
+                </h2>
+                <p class="text-muted small mb-0">Gestión y visualización de usuarios registrados en Turnosmart.</p>
+            </div>
+            <div class="count-badge">
+                <i class="bi bi-person-check me-1"></i>
+                <span th:text="${usuarios.size() + ' Clientes'}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th class="ps-4">Identificación (DNI)</th>
+                    <th>Nombre del Cliente</th>
+                    <th>Correo Electrónico</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${usuarios}">
+                    <td class="ps-4">
+                        <span class="fw-bold text-dark d-block" th:text="${u.dni}"></span>
+                        <small class="text-muted" th:text="${'ID: #' + u.id}"></small>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle" th:text="${u.firstName.substring(0,1) + u.lastName.substring(0,1)}"></div>
+                            <div>
+                                <span class="fw-600 d-block" th:text="${u.firstName + ' ' + u.lastName}"></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-muted" th:text="${u.email}"></span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a th:href="@{/admin/usuarios/detalle/{id}(id=${u.id})}"
+                           class="btn-action"
+                           title="Ver Perfil Completo">
+                            <i class="bi bi-person-badge"></i>
+                        </a>
+
+                        <button type="button"
+                                class="btn-action btn-delete"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                th:data-id="${u.id}"
+                                th:data-name="${u.firstName + ' ' + u.lastName}"
+                                onclick="prepareDelete(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                <tr th:if="${usuarios.isEmpty()}">
+                    <td colspan="4" class="empty-state">
+                        <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                        <p class="mb-0">No hay clientes registrados en la base de datos.</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-center mt-4 text-muted small">
+        &copy; 2026 Turnosmart - Panel de Administración.
+    </p>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-body p-5 text-center">
+                <div class="icon-box">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h3 class="fw-bold text-dark">¿Estás seguro?</h3>
+                <p class="text-muted mb-4">
+                    Estás a punto de desactivar al cliente <br>
+                    <strong id="deleteUserName" class="text-dark"></strong>. <br>
+                    Esta acción lo ocultará de la lista activa del panel.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn btn-light fw-semibold px-4 py-2" data-bs-dismiss="modal">Cancelar</button>
+                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger fw-semibold px-4 py-2">Sí, eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function prepareDelete(button) {
+        // Obtenemos los datos del botón que disparó el modal
+        const userId = button.getAttribute('data-id');
+        const userName = button.getAttribute('data-name');
+
+        // Inyectamos el nombre en el modal
+        document.getElementById('deleteUserName').innerText = userName;
+
+        // Configuramos la URL final del botón de confirmación
+        const deleteUrl = '/admin/usuarios/eliminar/' + userId;
+        document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+    }
+</script>
+
+</body>
+</html>

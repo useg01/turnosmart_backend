@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Abogado | Turnosmart</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --main-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Títulos y Navegación */
+        .page-title { font-weight: 700; letter-spacing: -0.02em; }
+
+        .btn-back {
+            background: white; border: 1px solid var(--border-color);
+            color: var(--text-muted); width: 42px; height: 42px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: all 0.2s ease;
+        }
+        .btn-back:hover {
+            background: var(--border-color);
+            color: var(--text-main);
+            transform: translateX(-3px);
+        }
+
+        /* Tarjeta de Formulario */
+        .card-form {
+            border: none; border-radius: 20px; background: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Estilización de Inputs */
+        .form-label {
+            font-weight: 600; color: var(--text-main); font-size: 0.8rem;
+            text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem;
+        }
+
+        .form-control {
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 0.75rem 1rem; font-size: 0.95rem; transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .form-control::placeholder { color: #94a3b8; font-size: 0.9rem; }
+
+        /* Input Groups */
+        .input-group-text {
+            background-color: #f1f5f9;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 12px 0 0 12px !important;
+            padding-left: 1.2rem;
+            padding-right: 1rem;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 12px 12px 0 !important;
+        }
+
+        /* Divisores de Sección */
+        .section-divider {
+            color: var(--primary-color); font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.12em; display: flex;
+            align-items: center; gap: 15px; margin-bottom: 2rem;
+        }
+
+        .section-divider::after {
+            content: ""; height: 1px; flex-grow: 1; background: linear-gradient(to right, var(--border-color), transparent);
+        }
+
+        /* Botones de Acción */
+        .btn-save {
+            background-color: var(--primary-color); border: none; padding: 0.9rem 2.2rem;
+            border-radius: 14px; font-weight: 600; color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-save:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-cancel {
+            background: #ffffff; border: 1px solid var(--border-color);
+            color: var(--text-muted); padding: 0.9rem 1.8rem; border-radius: 14px;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
+
+        /* Nota Informativa */
+        .note-card {
+            background: #eff6ff; border: 1px solid #dbeafe;
+            border-radius: 18px; padding: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- Encabezado -->
+            <div class="d-flex align-items-center mb-5">
+                <a th:href="@{/admin/abogados}" class="btn btn-back me-3 shadow-sm">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                <div>
+                    <h2 class="page-title h3 mb-1 text-dark"
+                        th:text="${lawyer.id == null ? 'Registrar Nuevo Abogado' : 'Editar Perfil de Abogado'}">
+                        Registrar Nuevo Abogado
+                    </h2>
+                    <p class="text-muted small mb-0">Gestión de credenciales y especialidades del personal jurídico.</p>
+                </div>
+            </div>
+
+            <!-- Card de Formulario -->
+            <div class="card card-form p-4 p-md-5">
+                <form th:action="@{/admin/abogados/guardar}" th:object="${lawyer}" method="post">
+
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{user.id}">
+
+                    <div class="row g-4">
+                        <!-- Bloque 1 -->
+                        <div class="col-12 mt-0">
+                            <div class="section-divider">Identificación Profesional</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" th:field="*{user.firstName}" class="form-control" placeholder="Ej. Carlos Alberto" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" th:field="*{user.lastName}" class="form-control" placeholder="Ej. Rodriguez Paz" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">DNI / ID Usuario</label>
+                            <input type="text" th:field="*{user.dni}" class="form-control" placeholder="Número de 8 dígitos" maxlength="8" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Colegiatura (N° Carnet)</label>
+                            <input type="text" th:field="*{colegiatura}" class="form-control" placeholder="Ej. CAL 12345" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Especialidad Jurídica</label>
+                            <input type="text" th:field="*{specialization}" class="form-control" placeholder="Ej. Derecho Corporativo, Civil y Familiar">
+                        </div>
+
+                        <!-- Bloque 2 -->
+                        <div class="col-12 mt-5">
+                            <div class="section-divider">Contacto y Notificaciones</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Institucional</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope-at"></i></span>
+                                <input type="email" th:field="*{user.email}" class="form-control" placeholder="abogado@turnosmart.com" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono WhatsApp</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+                                <input type="tel" th:field="*{user.phone}" class="form-control" placeholder="987 654 321" required>
+                            </div>
+                        </div>
+
+                        <!-- Botonera -->
+                        <div class="col-12 mt-5 pt-4 d-flex gap-3">
+                            <button type="submit" class="btn btn-save shadow-sm">
+                                <i class="bi bi-check-lg me-2"></i>
+                                <span th:text="${lawyer.id == null ? 'Finalizar Registro' : 'Actualizar Datos'}">Guardar Cambios</span>
+                            </button>
+                            <a th:href="@{/admin/abogados}" class="btn btn-cancel">
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer Informativo -->
+            <div class="note-card mt-4 d-flex align-items-start" th:if="${lawyer.id == null}">
+                <div class="me-3">
+                    <i class="bi bi-shield-lock-fill text-primary fs-4"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold text-primary mb-1">Seguridad del Sistema</h6>
+                    <p class="mb-0 text-muted small lh-lg">
+                        Para cuentas nuevas, la <strong>contraseña de acceso</strong> será el número de DNI.
+                        El perfil se creará en estado <strong>activo</strong> por defecto para permitir el inicio de sesión inmediato.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

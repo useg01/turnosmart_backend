@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información del Trámite | Turnosmart</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --main-bg: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: var(--main-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .btn-back {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            color: var(--primary-color);
+            transform: translateX(-4px);
+        }
+
+        /* Contenedor Principal */
+        .info-card {
+            border: none;
+            border-radius: 24px;
+            background: white;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .info-header {
+            padding: 3rem 3rem 1.5rem;
+        }
+
+        .info-body {
+            padding: 0 3rem 3rem;
+        }
+
+        .badge-category {
+            background: #eff6ff;
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        h1 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--text-main);
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .description-text {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 1.05rem;
+            white-space: pre-line; /* Mantiene saltos de línea y viñetas de la DB */
+        }
+
+        /* Panel Lateral de Acción */
+        .action-sidebar {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .data-value {
+            font-weight: 800;
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Alerta Personalizada */
+        .custom-alert {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-start {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 1.2rem;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            text-align: center;
+        }
+
+        .btn-start:hover {
+            background: var(--primary-hover);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .info-header, .info-body { padding: 2rem 1.5rem; }
+            .col-md-5 { margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="mx-auto" style="max-width: 950px;">
+
+        <!-- Botón Volver al Catálogo -->
+        <a th:href="@{/cliente/catalogo}" class="btn-back mb-4">
+            <i class="bi bi-arrow-left"></i> Volver al Catálogo
+        </a>
+
+        <div class="card info-card">
+            <!-- Encabezado con Nombre Dinámico -->
+            <div class="info-header">
+                <span class="badge-category">Servicio Notarial</span>
+                <h1 th:text="${tramite.name}">Nombre del Trámite</h1>
+            </div>
+
+            <div class="info-body">
+                <hr class="mb-5 opacity-50">
+
+                <div class="row g-5">
+                    <!-- Columna Información Detallada -->
+                    <div class="col-md-7">
+                        <h5 class="section-title">
+                            <i class="bi bi-card-text text-primary"></i> Descripción y Requisitos
+                        </h5>
+                        <!-- Muestra la descripción completa inyectada por SQL -->
+                        <p class="description-text mb-5" th:text="${tramite.description}">
+                            Aquí se cargará la descripción y los requisitos desde la base de datos...
+                        </p>
+
+                        <!-- Alerta Informativa -->
+                        <div class="custom-alert">
+                            <i class="bi bi-info-circle-fill text-warning fs-4"></i>
+                            <div>
+                                <strong class="d-block mb-1 text-warning-emphasis">Nota Importante</strong>
+                                <p class="small text-warning-emphasis mb-0">
+                                    Para este trámite, es obligatorio presentar su DNI vigente (o CE/Pasaporte) y los documentos originales mencionados arriba.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Sidebar de Acción y Precios -->
+                    <div class="col-md-5">
+                        <div class="action-sidebar text-center text-md-start">
+                            <!-- Precio Dinámico -->
+                            <div class="mb-4">
+                                <label class="data-label">Costo Total del Servicio</label>
+                                <span class="fs-2 data-value text-primary" th:text="'S/ ' + ${#numbers.formatDecimal(tramite.price, 1, 2)}">S/ 0.00</span>
+                            </div>
+
+                            <!-- Duración Dinámica -->
+                            <div class="mb-5">
+                                <label class="data-label">Tiempo Estimado en Notaría</label>
+                                <span class="fs-4 data-value">
+                                    <i class="bi bi-clock me-2 opacity-50"></i>
+                                    <span th:text="${tramite.durationMinutes} + ' minutos'">30 min</span>
+                                </span>
+                            </div>
+
+                            <!-- Botón de Acción Final: Lleva al formulario de reserva -->
+                            <a th:href="@{/cliente/iniciar-solicitud/{id}(id=${tramite.id})}"
+                               class="btn btn-start w-100 text-decoration-none d-block">
+                                <i class="bi bi-lightning-charge-fill me-2"></i> Iniciar Solicitud Ahora
+                            </a>
+
+                            <p class="x-small text-muted mt-3 text-center mb-0" style="font-size: 0.75rem;">
+                                Al iniciar, se le pedirá elegir una fecha y asignar un abogado.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
