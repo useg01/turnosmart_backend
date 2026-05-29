@@ -144,11 +144,11 @@
                     <p class="text-muted ps-5">Completa los detalles para agendar tu trámite notarial.</p>
                 </div>
 
-                <!-- Formulario vinculado a AppointmentRequestDTO -->
-                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post">
+                <!-- Formulario vinculado a AppointmentRequestDTO con soporte para archivos -->
+                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post" enctype="multipart/form-data">
                     <div class="row g-4">
 
-                        <!-- 1. Trámite -->
+                        <!-- 1. Selección de Trámite -->
                         <div class="col-12">
                             <label class="form-label">Tipo de Trámite</label>
                             <select th:field="*{procedureTypeId}" class="form-select" required>
@@ -159,7 +159,21 @@
                             </select>
                         </div>
 
-                        <!-- Selección de Abogado -->
+                        <!-- 2. RECUADRO DE CARGA: REQUISITOS EN PDF -->
+                        <div class="col-12">
+                            <label class="form-label text-primary">
+                                <i class="bi bi-file-earmark-pdf-fill me-1" style="color: #ef4444;"></i> Documentos requeridos (Formato PDF)
+                            </label>
+                            <div class="p-4 bg-light rounded-4 text-center border-2" style="border: 2px dashed #cbd5e1;">
+                                <i class="bi bi-cloud-arrow-up text-primary display-6 mb-2 d-block"></i>
+                                <input type="file" name="files" class="form-control rounded-3" accept=".pdf" multiple required>
+                                <div class="form-text text-muted mt-2" style="font-size: 0.75rem;">
+                                    Por favor, selecciona los documentos escaneados obligatorios en formato PDF. Puedes subir varios archivos a la vez.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Selección de Abogado -->
                         <div class="col-12">
                             <label class="form-label">Especialista Preferido</label>
                             <select th:field="*{lawyerId}" class="form-select">
@@ -170,12 +184,14 @@
                                 </option>
                             </select>
                         </div>
-                        
+
+                        <!-- 4. Observaciones -->
                         <div class="col-12">
                             <label class="form-label">Observaciones Adicionales</label>
                             <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="¿Algún detalle extra que debamos saber?"></textarea>
                         </div>
 
+                        <!-- Botón de Envío -->
                         <div class="col-12 mt-5">
                             <button type="submit" class="btn btn-primary w-100 shadow-sm">
                                 <i class="bi bi-send-check me-2"></i> Enviar Solicitud de Trámite
@@ -193,14 +209,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Bloquear fechas pasadas para consistencia en la UX
-    const input = document.getElementById('dateInput');
-    if(input) {
-        input.min = new Date().toISOString().split("T")[0];
-    }
-</script>
 
 </body>
 </html>

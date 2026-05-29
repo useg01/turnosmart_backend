@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,14 +41,23 @@ public class AppointmentController {
         return "cliente/nuevo-tramite";
     }
 
+    // Se añade el objeto MultipartFile mapeado con el atributo 'name="files"' del HTML
     @PostMapping("/save")
-    public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto, HttpSession session) {
+    public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto,
+                                  @RequestParam("files") List<MultipartFile> files,
+                                  HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
 
         if (loggedUser == null) return "redirect:/login";
 
-        // El trámite se asigna automáticamente al usuario en sesión
-        appointmentService.createAppointment(dto, loggedUser.getId());
+        // 1. Registra la base del trámite y retorna el objeto con su ID recién generado
+        com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
+                appointmentService.createAppointment(dto, loggedUser.getId());
+
+        // 2. Si se adjuntaron documentos, los vinculamos al ID del trámite correspondiente
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            appointmentService.uploadDocuments(nuevoTramite.getId(), files, loggedUser.getId());
+        }
 
         return "redirect:/cliente/dashboard?success";
     }
