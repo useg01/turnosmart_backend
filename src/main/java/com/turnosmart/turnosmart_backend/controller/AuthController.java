@@ -1,5 +1,6 @@
 package com.turnosmart.turnosmart_backend.controller;
 
+import com.turnosmart.turnosmart_backend.entity.Role;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.service.AuthService;
 import com.turnosmart.turnosmart_backend.service.UserService;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,22 +30,44 @@ public class AuthController {
     @PostMapping("/login")
     public String loginManual(@RequestParam String email,
                               @RequestParam String password,
-                              @RequestParam String interfaz,
                               HttpSession session,
                               Model model) {
 
         User user = userService.findByEmail(email);
 
-        // Validación de credenciales
         if (user != null && user.getPassword().equals(password)) {
-            session.setAttribute("loggedUser", user);
-            session.setAttribute("rolElegido", interfaz.toUpperCase());
 
-            return switch (interfaz.toUpperCase()) {
+            // 1. Validar que el Set de roles no esté vacío
+            if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                model.addAttribute("error", "El usuario no tiene un rol asignado en el sistema.");
+                return "login";
+            }
+
+            // 2. Extraer todos los nombres de los roles que posee el usuario en una lista limpia
+            List<String> roleNames = user.getRoles().stream()
+                    .map(role -> role.getName().toUpperCase())
+                    .toList();
+
+            // 3. Determinar la interfaz por orden de jerarquía estricta
+            String interfaz;
+
+            if (roleNames.contains("ROLE_ADMIN") || roleNames.contains("ADMIN")) {
+                interfaz = "ADMIN";
+            } else if (roleNames.contains("ROLE_NOTARIO") || roleNames.contains("NOTARIO") || roleNames.contains("ROLE_ABOGADO") || roleNames.contains("ABOGADO")) {
+                interfaz = "ABOGADO";
+            } else {
+                interfaz = "CLIENTE";
+            }
+
+            // 4. Guardar en sesión de forma segura
+            session.setAttribute("loggedUser", user);
+            session.setAttribute("rolElegido", interfaz);
+
+            // 5. Redirección automática basada en la jerarquía detectada
+            return switch (interfaz) {
                 case "ADMIN" -> "redirect:/admin/dashboard";
                 case "ABOGADO" -> "redirect:/abogado/dashboard";
-                case "CLIENTE" -> "redirect:/cliente/dashboard";
-                default -> "redirect:/login?error=rol_no_valido";
+                default -> "redirect:/cliente/dashboard";
             };
         }
 
@@ -53,7 +78,6 @@ public class AuthController {
     // --- PANTALLA DE REGISTRO (GET) ---
     @GetMapping("/registro")
     public String registro(Model model) {
-        // Usamos "usuario" como nombre de atributo para ser claros en el HTML
         if (!model.containsAttribute("usuario")) {
             model.addAttribute("usuario", new User());
         }
