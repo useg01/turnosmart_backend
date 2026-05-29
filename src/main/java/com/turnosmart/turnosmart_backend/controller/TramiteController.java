@@ -47,8 +47,8 @@ public class TramiteController {
 
     @GetMapping("/abogado/dashboard")
     public String dashboardAbogado(HttpSession session, Model model) {
+        // El interceptor ya validó que hay sesión y que es ABOGADO
         User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
 
         List<Appointment> citas = appointmentRepository.findByLawyerId(user.getId());
         model.addAttribute("citasHoy", citas != null ? citas : new ArrayList<>());
@@ -56,24 +56,24 @@ public class TramiteController {
     }
 
     @GetMapping("/cliente/dashboard")
-    public String dashboardCliente(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
+    public String clienteDashboard(HttpSession session, Model model) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
 
-        List<Appointment> misTramites = appointmentRepository.findByClientId(user.getId());
+        // Cambiamos la llamada para usar findByClientId
+        List<Appointment> misTramites = appointmentRepository.findByClientId(loggedUser.getId());
+
+        model.addAttribute("usuario", loggedUser);
         model.addAttribute("misTramites", misTramites != null ? misTramites : new ArrayList<>());
+
         return "cliente/dashboard";
     }
 
     // =========================================================
-    // CATÁLOGO E INFORMACIÓN (Opción A)
+    // CATÁLOGO E INFORMACIÓN
     // =========================================================
 
     @GetMapping("/cliente/catalogo")
-    public String verCatalogo(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
-
+    public String verCatalogo(Model model) {
         List<ProcedureType> lista = procedureTypeRepository.findAll();
         model.addAttribute("servicios", lista != null ? lista : new ArrayList<>());
         return "cliente/catalogo";
@@ -84,10 +84,7 @@ public class TramiteController {
      * Vinculado al botón "Solicitar información" del catálogo.
      */
     @GetMapping("/cliente/detalle/{id}")
-    public String verDetalleTramite(@PathVariable Long id, Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
-
+    public String verDetalleTramite(@PathVariable Long id, Model model) {
         ProcedureType tramite = procedureTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
@@ -100,10 +97,7 @@ public class TramiteController {
      * Vinculado al botón "Iniciar Trámite" dentro de la página de detalle.
      */
     @GetMapping("/cliente/iniciar-solicitud/{id}")
-    public String mostrarFormularioSolicitud(@PathVariable Long id, Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
-
+    public String mostrarFormularioSolicitud(@PathVariable Long id, Model model) {
         ProcedureType tramite = procedureTypeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
@@ -123,8 +117,6 @@ public class TramiteController {
     @GetMapping("/cliente/perfil")
     public String verPerfil(HttpSession session, Model model) {
         User user = (User) session.getAttribute("loggedUser");
-        if (user == null) return "redirect:/login";
-
         model.addAttribute("usuario", user);
         return "cliente/perfil";
     }
