@@ -51,7 +51,10 @@ public class Appointment {
     private String priority = "Normal"; // Para el semáforo del Dashboard (Alta, Normal, Baja)
 
     @Column(columnDefinition = "TEXT")
-    private String notes; // Aquí el abogado guarda los comentarios de "Por qué regularizar"
+    private String clientNotes; // Nota u observación inicial que deja el cliente
+
+    @Column(columnDefinition = "TEXT")
+    private String lawyerNotes; // Respuesta, feedback o comentarios del abogado
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -84,5 +87,8 @@ public class Appointment {
     public void addLog(AppointmentLog log) {
         logs.add(log);
         log.setAppointment(this);
+    }
+
+    public void setNotes(String comentario) {
     }
 }

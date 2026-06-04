@@ -161,27 +161,21 @@ public class TramiteController {
                                    @RequestParam("nuevoEstado") String nuevoEstado,
                                    @RequestParam(value = "comentario", required = false) String comentario) {
 
-        // 1. Buscamos la cita de forma segura
         Appointment appointment = appointmentRepository.findById(idCita)
                 .orElseThrow(() -> new RuntimeException("No se encontró la cita con ID: " + idCita));
 
         try {
-            // 2. Convertimos el String limpiando espacios por si acaso (.trim())
             com.turnosmart.turnosmart_backend.entity.AppointmentStatus statusEnum =
                     com.turnosmart.turnosmart_backend.entity.AppointmentStatus.valueOf(nuevoEstado.trim());
-
             appointment.setStatus(statusEnum);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("El estado enviado '" + nuevoEstado + "' no es un estado válido del sistema.");
+            throw new RuntimeException("El estado enviado '" + nuevoEstado + "' no es un estado válido.");
         }
 
-        // 3. Guardamos el comentario si el abogado escribió algo
-        appointment.setNotes(comentario);
+        // CORRECCIÓN: Guardamos la respuesta en el campo del abogado sin tocar el del cliente
+        appointment.setLawyerNotes(comentario);
 
-        // 4. Persistimos los cambios en la Base de Datos
         appointmentRepository.save(appointment);
-
-        // 5. Redireccionamos limpiamente al dashboard con un parámetro de éxito
         return "redirect:/abogado/dashboard?success=true";
     }
 }
