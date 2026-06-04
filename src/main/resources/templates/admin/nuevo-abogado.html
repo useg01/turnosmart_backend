@@ -143,10 +143,20 @@
 
             <!-- Card de Formulario -->
             <div class="card card-form p-4 p-md-5">
-                <form th:action="@{/admin/abogados/guardar}" th:object="${lawyer}" method="post">
+                <!-- 1. Agregamos el onsubmit para evitar el doble envío que vimos en los logs de Hibernate -->
+                <form th:action="@{/admin/abogados/guardar}" th:object="${lawyer}" method="post" onsubmit="document.getElementById('btnSubmit').disabled = true;">
 
+                    <!-- CORRECCIÓN CLAVE: Campos ocultos para edición -->
                     <input type="hidden" th:field="*{id}">
-                    <input type="hidden" th:field="*{user.id}">
+                    <!-- Usamos name en lugar de th:field para evitar que Spring se confunda al mapear el ID del objeto anidado en la edición -->
+                    <input type="hidden" name="user.id" th:value="*{user != null ? user.id : ''}">
+
+                    <!-- ALERTA DE ERROR: Aquí se mostrará el mensaje si el DNI, Correo o Colegiatura ya existen -->
+                    <div th:if="${error}" class="col-12 alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong th:text="${error}">Mensaje de error</strong>
+                        <button type="type" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
 
                     <div class="row g-4">
                         <!-- Bloque 1 -->
@@ -166,7 +176,8 @@
 
                         <div class="col-md-6">
                             <label class="form-label">DNI / ID Usuario</label>
-                            <input type="text" th:field="*{user.dni}" class="form-control" placeholder="Número de 8 dígitos" maxlength="8" required>
+                            <!-- Si estás editando (id != null), bloqueamos el DNI para que no lo alteren por error ya que es llave de negocio -->
+                            <input type="text" th:field="*{user.dni}" class="form-control" placeholder="Número de 8 dígitos" maxlength="8" required th:readonly="${lawyer.id != null}">
                         </div>
 
                         <div class="col-md-6">
@@ -202,7 +213,8 @@
 
                         <!-- Botonera -->
                         <div class="col-12 mt-5 pt-4 d-flex gap-3">
-                            <button type="submit" class="btn btn-save shadow-sm">
+                            <!-- Agregamos id="btnSubmit" para que el script de la cabecera pueda desactivarlo al hacer clic -->
+                            <button type="submit" id="btnSubmit" class="btn btn-save shadow-sm">
                                 <i class="bi bi-check-lg me-2"></i>
                                 <span th:text="${lawyer.id == null ? 'Finalizar Registro' : 'Actualizar Datos'}">Guardar Cambios</span>
                             </button>

@@ -6,4 +6,7 @@ import java.util.List;
 
 public interface LawyerRepository extends JpaRepository<Lawyer, Long> {
     List<Lawyer> findByActiveTrue();
+
+    // CORRECCIÓN PARA EL CUS03 (Excepción E1)
+    boolean existsByColegiatura(String colegiatura);
 }
