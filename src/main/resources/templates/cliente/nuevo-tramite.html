@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Solicitud | Turnosmart</title>
-    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -100,6 +98,14 @@
             box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
+        /* Botón Borrador */
+        .btn-draft {
+            border-radius: 14px;
+            padding: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
         /* Decoración de sección */
         .section-step {
             display: flex;
@@ -120,6 +126,11 @@
             font-size: 0.9rem;
         }
 
+        .alert-custom {
+            border: none;
+            border-radius: 16px;
+        }
+
         @media (max-width: 768px) {
             .form-card { padding: 2rem 1.5rem !important; }
         }
@@ -130,8 +141,7 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            <!-- Botón Volver -->
-            <a th:href="@{/cliente/dashboard}" class="btn-back text-decoration-none mb-4">
+            <a th:href="@{/cliente/dashboard}" class="btn-back text-decoration-none mb-4" onclick="return confirm('¿Está seguro de que desea desistir del registro? Se borrarán los datos temporales ingresados.');">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
 
@@ -144,14 +154,21 @@
                     <p class="text-muted ps-5">Completa los detalles para agendar tu trámite notarial.</p>
                 </div>
 
-                <!-- Formulario vinculado a AppointmentRequestDTO con soporte para archivos -->
-                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post" enctype="multipart/form-data">
+                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('btnSubmit').disabled = true; document.getElementById('btnDraft').disabled = true;">
+
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show alert-custom shadow-sm mb-4" role="alert">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-5" style="color: #ef4444;"></i>
+                            <span class="small fw-semibold" th:text="${error}">Mensaje de error de negocio</span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
                     <div class="row g-4">
 
-                        <!-- 1. Selección de Trámite -->
                         <div class="col-12">
                             <label class="form-label">Tipo de Trámite</label>
-                            <select th:field="*{procedureTypeId}" class="form-select" required>
+                            <select th:field="*{procedureTypeId}" id="cbProcedureType" class="form-select" required>
                                 <option value="">Seleccione un servicio...</option>
                                 <option th:each="p : ${procedimientos}"
                                         th:value="${p.id}"
@@ -159,21 +176,53 @@
                             </select>
                         </div>
 
-                        <!-- 2. RECUADRO DE CARGA: REQUISITOS EN PDF -->
+                        <div id="seccionRepresentacion" class="col-12" style="display: none;">
+                            <div class="p-4 rounded-4 border" style="background-color: #f8fafc; border-color: #e2e8f0;">
+                                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-building-add me-2"></i> Datos de Representación Legal (CUS05)</h6>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tipo de Persona</label>
+                                        <select th:field="*{representationType}" id="repoType" class="form-select" onchange="actualizarLabelsCUS05()">
+                                            <option value="">-- Seleccione --</option>
+                                            <option value="JURIDICA">Persona Jurídica (Empresa)</option>
+                                            <option value="NATURAL">Persona Natural</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label" id="lblIdentifier">RUC de la Empresa</label>
+                                        <input type="text" th:field="*{identifier}" id="txtIdentifier" class="form-control" placeholder="Ej. 20123456789">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label" id="lblName">Razón Social de la Representada</label>
+                                        <input type="text" th:field="*{businessName}" id="txtName" class="form-control" placeholder="Nombre legal o comercial completo">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="alert alert-warning m-0 py-2 px-3 rounded-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border: none;">
+                                            <i class="bi bi-exclamation-circle-fill fs-6 text-warning"></i>
+                                            <span class="fw-medium text-warning-emphasis"><strong>RN-01:</strong> La vigencia de poder adjunta no debe tener una antigüedad mayor a 30 días calendario.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label text-primary">
                                 <i class="bi bi-file-earmark-pdf-fill me-1" style="color: #ef4444;"></i> Documentos requeridos (Formato PDF)
                             </label>
                             <div class="p-4 bg-light rounded-4 text-center border-2" style="border: 2px dashed #cbd5e1;">
                                 <i class="bi bi-cloud-arrow-up text-primary display-6 mb-2 d-block"></i>
-                                <input type="file" name="files" class="form-control rounded-3" accept=".pdf" multiple required>
+                                <input type="file" name="files" class="form-control rounded-3" accept=".pdf" multiple>
                                 <div class="form-text text-muted mt-2" style="font-size: 0.75rem;">
                                     Por favor, selecciona los documentos escaneados obligatorios en formato PDF. Puedes subir varios archivos a la vez.
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 3. Selección de Abogado -->
                         <div class="col-12">
                             <label class="form-label">Especialista Preferido</label>
                             <select th:field="*{lawyerId}" class="form-select">
@@ -185,17 +234,24 @@
                             </select>
                         </div>
 
-                        <!-- 4. Observaciones -->
                         <div class="col-12">
                             <label class="form-label">Observaciones Adicionales</label>
                             <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="¿Algún detalle extra que debamos saber?"></textarea>
                         </div>
 
-                        <!-- Botón de Envío -->
                         <div class="col-12 mt-5">
-                            <button type="submit" class="btn btn-primary w-100 shadow-sm">
-                                <i class="bi bi-send-check me-2"></i> Enviar Solicitud de Trámite
-                            </button>
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <button type="submit" id="btnSubmit" name="action" value="enviar" class="btn btn-primary w-100 shadow-sm">
+                                        <i class="bi bi-send-check me-2"></i> Enviar Solicitud de Trámite
+                                    </button>
+                                </div>
+                                <div class="col-md-5">
+                                    <button type="submit" id="btnDraft" name="action" value="borrador" class="btn btn-outline-secondary btn-draft w-100">
+                                        <i class="bi bi-archive me-2"></i> Guardar Borrador
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -210,5 +266,66 @@
     </div>
 </div>
 
+<script>
+    // Función centralizada para evaluar el estado y visibilidad del formulario
+    function evaluarTipoTramite() {
+        const combo = document.getElementById('cbProcedureType');
+        if (!combo.value) return; // Si no hay selección, salta
+
+        const selectedText = combo.options[combo.selectedIndex].text.toLowerCase();
+        const seccionCUS05 = document.getElementById('seccionRepresentacion');
+        const txtIdentifier = document.getElementById('txtIdentifier');
+        const txtName = document.getElementById('txtName');
+        const repoType = document.getElementById('repoType');
+
+        if (selectedText.includes('representación') || selectedText.includes('representacion')) {
+            seccionCUS05.style.display = 'block';
+            txtIdentifier.required = true;
+            txtName.required = true;
+            repoType.required = true;
+        } else {
+            seccionCUS05.style.display = 'none';
+            txtIdentifier.required = false;
+            txtName.required = false;
+            repoType.required = false;
+
+            // Limpieza estricta de valores (Flujo A1)
+            txtIdentifier.value = '';
+            txtName.value = '';
+            repoType.value = '';
+        }
+    }
+
+    // Escuchar los cambios en tiempo de ejecución
+    document.getElementById('cbProcedureType').addEventListener('change', evaluarTipoTramite);
+
+    // Ejecutar al cargar la página por si Thymeleaf retorna debido a un error previo
+    document.addEventListener('DOMContentLoaded', function() {
+        evaluarTipoTramite();
+        actualizarLabelsCUS05();
+    });
+
+    // Cambiar dinámicamente etiquetas internas según la personería
+    function actualizarLabelsCUS05() {
+        const type = document.getElementById("repoType").value;
+        const lblIdentifier = document.getElementById("lblIdentifier");
+        const lblName = document.getElementById("lblName");
+        const txtIdentifier = document.getElementById("txtIdentifier");
+        const txtName = document.getElementById("txtName");
+
+        if(type === "NATURAL") {
+            lblIdentifier.innerText = "DNI del Representado";
+            lblName.innerText = "Nombre Completo del Representado";
+            txtIdentifier.placeholder = "Ej. 45678912";
+            txtName.placeholder = "Nombres y Apellidos";
+        } else {
+            lblIdentifier.innerText = "RUC de la Empresa";
+            lblName.innerText = "Razón Social de la Representada";
+            txtIdentifier.placeholder = "Ej. 20123456789";
+            txtName.placeholder = "Nombre legal o comercial completo";
+        }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

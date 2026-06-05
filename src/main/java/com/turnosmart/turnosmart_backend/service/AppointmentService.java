@@ -27,9 +27,6 @@ public class AppointmentService {
     private final ProcedureTypeRepository procedureTypeRepo;
     private final AppointmentLogRepository logRepo;
 
-    // =========================================================
-    // MÉTODOS PARA DASHBOARD / ADMIN
-    // =========================================================
 
     public long count() {
         return appointmentRepo.count();
@@ -39,9 +36,6 @@ public class AppointmentService {
         return appointmentRepo.findAllWithDetails();
     }
 
-    // =========================================================
-    // GESTIÓN DE DISPONIBILIDAD (REGLA DE LOS 6 TURNOS)
-    // =========================================================
 
     @Transactional(readOnly = true)
     public List<String> getAvailableSlots(LocalDate date, Long lawyerId) {
@@ -65,16 +59,10 @@ public class AppointmentService {
         return appointmentRepo.findFullDaysByLawyer(lawyerId);
     }
 
-    // =========================================================
-    // OPERACIONES DE CITA (CREATE / UPDATE)
-    // =========================================================
-
     @Transactional
-    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
+    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId, boolean esBorrador) {
         Lawyer lawyer = lawyerRepo.findById(dto.getLawyerId())
                 .orElseThrow(() -> new BusinessException("El abogado seleccionado no existe."));
-
-        //SE ELIMINÓ: La validación de los 6 cupos diarios porque el cliente ya no elige fecha.
 
         User client = userRepo.findById(clientUserId)
                 .orElseThrow(() -> new BusinessException("Usuario cliente no encontrado."));
@@ -83,21 +71,27 @@ public class AppointmentService {
                 .orElseThrow(() -> new BusinessException("Tipo de trámite no válido."));
 
         Appointment app = new Appointment();
+
         app.setTicketNumber("TS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         app.setClient(client);
         app.setLawyer(lawyer);
         app.setProcedureType(procedure);
 
-        // Aceptarán valores nulos temporalmente hasta que el abogado los programe
         app.setAppointmentDate(dto.getDate());
         app.setAppointmentTime(dto.getTime());
 
-        // Mantenemos el estado inicial en REVISION para que el staff lo evalúe
-        app.setStatus(AppointmentStatus.REVISION);
+        String logComment;
+        if (esBorrador) {
+            app.setStatus(AppointmentStatus.REGULARIZAR);
+            logComment = "Trámite guardado como borrador incompleto por el cliente.";
+        } else {
+            app.setStatus(AppointmentStatus.SOLICITADO);
+            logComment = "Trámite de Poder Legal enviado. Pendiente de Validación de documentos de respaldo.";
+        }
 
         Appointment saved = appointmentRepo.save(app);
 
-        registrarLog(saved, "N/A", "REVISION", "Trámite registrado correctamente sin fecha programada.", clientUserId);
+        registrarLog(saved, "N/A", saved.getStatus().name(), logComment, clientUserId);
 
         return new AppointmentResponseDTO(saved.getId(), saved.getTicketNumber(),
                 saved.getAppointmentDate(), saved.getAppointmentTime(), saved.getStatus().name());
@@ -117,10 +111,6 @@ public class AppointmentService {
         registrarLog(app, estadoAnterior, nuevoEstado.name(), comentario, actorId);
     }
 
-    // =========================================================
-    // CONSULTAS Y DOCUMENTOS
-    // =========================================================
-
     public List<Appointment> findByClient(Long clientId) {
         return appointmentRepo.findByClientId(clientId);
     }
@@ -139,13 +129,9 @@ public class AppointmentService {
         Appointment app = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new BusinessException("Cita no encontrada para subir archivos."));
 
-        // CORRECCIÓN: Se pasa el userId para la auditoría del log
         registrarLog(app, app.getStatus().name(), app.getStatus().name(), "Se cargaron nuevos documentos adjuntos.", userId);
     }
 
-    // =========================================================
-    // MÉTODOS PRIVADOS
-    // =========================================================
 
     private void registrarLog(Appointment app, String oldS, String newS, String comment, Long userId) {
         // 1. Buscamos el usuario por su ID
@@ -158,7 +144,6 @@ public class AppointmentService {
         log.setNewStatus(newS);
         log.setComments(comment);
 
-        // 2. Ahora sí pasamos el objeto 'user', no el ID
         log.setChangedBy(user);
 
         log.setChangedAt(LocalDateTime.now());

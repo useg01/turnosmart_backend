@@ -11,6 +11,10 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class AppointmentRequestDTO {
 
+    private String representationType;
+    private String identifier;
+    private String businessName;
+
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
 

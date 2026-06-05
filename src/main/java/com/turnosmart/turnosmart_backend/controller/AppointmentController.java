@@ -30,7 +30,6 @@ public class AppointmentController {
     public String viewCrearTurno(Model model, HttpSession session) {
         String rol = (String) session.getAttribute("rolElegido");
 
-        // Bloqueo: Si no es CLIENTE, no entra
         if (!"CLIENTE".equals(rol)) {
             return "redirect:/admin/dashboard";
         }
@@ -41,28 +40,62 @@ public class AppointmentController {
         return "cliente/nuevo-tramite";
     }
 
-    // Se añade el objeto MultipartFile mapeado con el atributo 'name="files"' del HTML
     @PostMapping("/save")
     public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto,
-                                  @RequestParam("files") List<MultipartFile> files,
-                                  HttpSession session) {
+                                  @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                  @RequestParam(value = "action", defaultValue = "enviar") String action,
+                                  HttpSession session,
+                                  Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-
         if (loggedUser == null) return "redirect:/login";
 
-        // 1. Registra la base del trámite y retorna el objeto con su ID recién generado
-        com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
-                appointmentService.createAppointment(dto, loggedUser.getId());
+        boolean esBorrador = "borrador".equals(action);
 
-        // 2. Si se adjuntaron documentos, los vinculamos al ID del trámite correspondiente
-        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
-            appointmentService.uploadDocuments(nuevoTramite.getId(), files, loggedUser.getId());
+        try {
+            if ("JURIDICA".equals(dto.getRepresentationType()) && dto.getIdentifier() != null && !dto.getIdentifier().trim().isEmpty()) {
+                String ruc = dto.getIdentifier().trim();
+
+                if (!ruc.matches("^(10|20)\\d{9}$")) {
+                    throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
+                            "Excepción E1: El identificador de la persona jurídica (RUC) ingresado no cumple con el formato válido de 11 dígitos."
+                    );
+                }
+            }
+
+            if (!esBorrador && (files == null || files.isEmpty() || files.get(0).isEmpty())) {
+                throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
+                        "RN-01: No se puede guardar ni enviar el trámite si falta cargar alguno de los documentos obligatorios."
+                );
+            }
+
+            if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+                for (MultipartFile file : files) {
+                    String contentType = file.getContentType();
+                    if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
+                        throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
+                                "RN-02 / E1: Los documentos adjuntos deben subirse obligatoriamente en formato PDF."
+                        );
+                    }
+                }
+            }
+
+            com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
+                    appointmentService.createAppointment(dto, loggedUser.getId(), esBorrador);
+
+            if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+                appointmentService.uploadDocuments(nuevoTramite.getId(), files, loggedUser.getId());
+            }
+
+            return "redirect:/cliente/dashboard?success";
+
+        } catch (com.turnosmart.turnosmart_backend.exception.BusinessException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("abogados", lawyerService.findAll());
+            model.addAttribute("procedimientos", procedureTypeRepo.findAll());
+            model.addAttribute("appointmentRequest", dto);
+            return "cliente/nuevo-tramite";
         }
-
-        return "redirect:/cliente/dashboard?success";
     }
-
-    // --- API PARA CALENDARIO ---
 
     @GetMapping("/api/dias-llenos")
     @ResponseBody
