@@ -60,10 +60,15 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId, boolean esBorrador) {
-        Lawyer lawyer = lawyerRepo.findById(dto.getLawyerId())
-                .orElseThrow(() -> new BusinessException("El abogado seleccionado no existe."));
+    public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
+        // 1. Obtener al abogado con menor carga de trabajo en el sistema
+        List<Lawyer> availableLawyers = lawyerRepo.findLawyersOrderByLoad();
+        if (availableLawyers.isEmpty()) {
+            throw new BusinessException("No existen abogados activos registrados en el sistema para la asignación.");
+        }
+        Lawyer automaticallyAssignedLawyer = availableLawyers.get(0);
 
+        // 2. Validar cliente y procedimiento
         User client = userRepo.findById(clientUserId)
                 .orElseThrow(() -> new BusinessException("Usuario cliente no encontrado."));
 
@@ -71,30 +76,27 @@ public class AppointmentService {
                 .orElseThrow(() -> new BusinessException("Tipo de trámite no válido."));
 
         Appointment app = new Appointment();
-
         app.setTicketNumber("TS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         app.setClient(client);
-        app.setLawyer(lawyer);
+        app.setLawyer(automaticallyAssignedLawyer);
         app.setProcedureType(procedure);
 
-        app.setAppointmentDate(dto.getDate());
-        app.setAppointmentTime(dto.getTime());
+        app.setRepresentationType(dto.getRepresentationType());
+        app.setIdentifier(dto.getIdentifier());
+        app.setBusinessName(dto.getBusinessName());
 
-        String logComment;
-        if (esBorrador) {
-            app.setStatus(AppointmentStatus.REGULARIZAR);
-            logComment = "Trámite guardado como borrador incompleto por el cliente.";
-        } else {
-            app.setStatus(AppointmentStatus.SOLICITADO);
-            logComment = "Trámite de Poder Legal enviado. Pendiente de Validación de documentos de respaldo.";
-        }
+        app.setNotes(dto.getNotes());
+
+        app.setStatus(AppointmentStatus.PENDIENTE_EVALUACION);
 
         Appointment saved = appointmentRepo.save(app);
 
+        String logComment = "Trámite de Gestión Notarial iniciado por el cliente. Asignado automáticamente al Especialista: "
+                + automaticallyAssignedLawyer.getUser().getFirstName() + " " + automaticallyAssignedLawyer.getUser().getLastName();
+
         registrarLog(saved, "N/A", saved.getStatus().name(), logComment, clientUserId);
 
-        return new AppointmentResponseDTO(saved.getId(), saved.getTicketNumber(),
-                saved.getAppointmentDate(), saved.getAppointmentTime(), saved.getStatus().name());
+        return new AppointmentResponseDTO(saved.getId(), saved.getTicketNumber(), null, null, saved.getStatus().name());
     }
 
     @Transactional

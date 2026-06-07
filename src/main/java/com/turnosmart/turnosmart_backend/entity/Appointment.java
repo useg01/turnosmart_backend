@@ -91,4 +91,14 @@ public class Appointment {
 
     public void setNotes(String comentario) {
     }
+
+    public void setRepresentationType(String representationType) {
+    }
+
+    public void setBusinessName(String businessName) {
+    }
+
+    public void setIdentifier(String identifier) {
+
+    }
 }
