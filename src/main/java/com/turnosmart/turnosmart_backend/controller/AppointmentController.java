@@ -2,9 +2,10 @@ package com.turnosmart.turnosmart_backend.controller;
 
 import com.turnosmart.turnosmart_backend.dto.AppointmentRequestDTO;
 import com.turnosmart.turnosmart_backend.entity.User;
+import com.turnosmart.turnosmart_backend.entity.Appointment;
 import com.turnosmart.turnosmart_backend.service.AppointmentService;
 import com.turnosmart.turnosmart_backend.service.LawyerService;
-import com.turnosmart.turnosmart_backend.repository.ProcedureTypeRepository; // Asumiendo que existe
+import com.turnosmart.turnosmart_backend.repository.ProcedureTypeRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -43,6 +44,7 @@ public class AppointmentController {
     @PostMapping("/save")
     public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto,
                                   HttpSession session,
+                                  RedirectAttributes redirectAttributes, // Agregado para pasar mensajes flash tras la redirección
                                   Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/login";
@@ -57,10 +59,21 @@ public class AppointmentController {
                 }
             }
 
+            // 1. Crear el trámite (se asigna el abogado automáticamente por carga de trabajo)
             com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
                     appointmentService.createAppointment(dto, loggedUser.getId());
 
-            return "redirect:/cliente/dashboard?success";
+            // 2. Recuperar la entidad completa mediante el ticket para extraer el abogado asignado
+            Appointment expediente = appointmentService.findByTicket(nuevoTramite.getTicketNumber());
+            User datosAbogado = expediente.getLawyer().getUser();
+            String nombreCompletoAbogado = datosAbogado.getFirstName() + " " + datosAbogado.getLastName();
+
+            // 3. Crear el mensaje de éxito dinámico usando Flash Attributes
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "¡Trámite generado con éxito! Ticket: " + nuevoTramite.getTicketNumber() +
+                            ". Asignado automáticamente al Especialista: " + nombreCompletoAbogado);
+
+            return "redirect:/cliente/dashboard";
 
         } catch (com.turnosmart.turnosmart_backend.exception.BusinessException e) {
             model.addAttribute("error", e.getMessage());

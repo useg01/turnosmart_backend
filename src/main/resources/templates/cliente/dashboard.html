@@ -86,11 +86,12 @@
             transform: scale(1.01);
         }
 
-        /* Colores de estado actualizados para incluir CUS04 */
+        /* Colores de estado actualizados para incluir CUS04 y Fase 2 */
         .status-solicitado { border-left-color: #3b82f6; } /* Azul - Pendiente de Validación */
         .status-revision { border-left-color: #f59e0b; }   /* Ámbar */
         .status-conforme { border-left-color: #10b981; }  /* Verde */
         .status-regularizar { border-left-color: #ef4444; } /* Rojo - Borrador Incompleto */
+        .status-pendiente-evaluacion { border-left-color: #6366f1; } /* Índigo - Nuevo estado Fase 2 */
 
         .qr-placeholder {
             background: #f1f5f9;
@@ -150,6 +151,19 @@
 
 <div class="container py-5">
 
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm p-4 mb-4" role="alert" style="background-color: #f0fdf4;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-2 rounded-3 bg-success text-white d-flex align-items-center justify-content-center">
+                <i class="bi bi-check2-circle fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold text-success mb-1">¡Registro Completado Exitosamente!</h6>
+                <p class="mb-0 small text-success-emphasis" th:text="${successMessage}">Detalles del trámite guardado.</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="top: 1.5rem;"></button>
+    </div>
+
     <div class="row mb-5">
         <div class="col-12 mb-4">
             <h2 class="fw-bold display-6">Bienvenido, <span th:text="${session.loggedUser.firstName}" class="text-primary">Usuario</span> 👋</h2>
@@ -202,7 +216,7 @@
 
         <div class="col-12" th:each="t : ${misTramites}">
             <div class="card tramite-card p-4 mb-3"
-                 th:classappend="${t.status.name() == 'SOLICITADO' ? 'status-solicitado' : (t.status.name() == 'REVISION' ? 'status-revision' : (t.status.name() == 'REGULARIZAR' ? 'status-regularizar' : 'status-conforme'))}">
+                 th:classappend="${t.status.name() == 'SOLICITADO' ? 'status-solicitado' : (t.status.name() == 'REVISION' ? 'status-revision' : (t.status.name() == 'REGULARIZAR' ? 'status-regularizar' : (t.status.name() == 'PENDIENTE_EVALUACION' ? 'status-pendiente-evaluacion' : 'status-conforme')))}">
                 <div class="row align-items-center">
                     <div class="col-auto">
                         <div class="qr-placeholder">
@@ -220,11 +234,15 @@
                                         <i class="bi bi-calendar-event me-1"></i>
                                         <span th:text="${t.appointmentDate != null ? t.appointmentDate : 'Pendiente de programación'}">11/05/2026</span>
                                     </small>
+                                    <small class="text-secondary fw-medium">
+                                        <i class="bi bi-person-workspace me-1"></i>Especialista:
+                                        <span class="fw-semibold text-dark" th:text="${t.lawyer.user.firstName + ' ' + t.lawyer.user.lastName}">Dr. Asignado</span>
+                                    </small>
                                 </div>
                             </div>
                             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
                                 <span class="badge badge-pill-custom"
-                                      th:classappend="${t.status.name() == 'SOLICITADO' ? 'bg-primary-subtle text-primary-emphasis' : (t.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning-emphasis' : (t.status.name() == 'REGULARIZAR' ? 'bg-danger-subtle text-danger-emphasis' : 'bg-success-subtle text-success-emphasis'))}"
+                                      th:classappend="${t.status.name() == 'SOLICITADO' ? 'bg-primary-subtle text-primary-emphasis' : (t.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning-emphasis' : (t.status.name() == 'REGULARIZAR' ? 'bg-danger-subtle text-danger-emphasis' : (t.status.name() == 'PENDIENTE_EVALUACION' ? 'bg-indigo-subtle text-indigo-emphasis' : 'bg-success-subtle text-success-emphasis')))}"
                                       th:text="${t.status.getLabel()}">PENDIENTE</span>
                             </div>
                         </div>
