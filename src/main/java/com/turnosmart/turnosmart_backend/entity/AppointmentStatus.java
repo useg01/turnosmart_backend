@@ -3,7 +3,7 @@ package com.turnosmart.turnosmart_backend.entity;
 public enum AppointmentStatus {
     SOLICITADO, REVISION, REGULARIZAR, CONFORME, REDACCION,
     LISTO_FIRMA, FIRMADO, PROTOCOLIZACION, ENTREGADO, CANCELADO,
-    PENDIENTE_EVALUACION; // Asegúrate de cerrar con punto y coma aquí
+    PENDIENTE_EVALUACION, PROCESO_DETENIDO;
 
     public String getLabel() {
         return switch (this) {
@@ -17,7 +17,8 @@ public enum AppointmentStatus {
             case PROTOCOLIZACION     -> "En Protocolización";
             case ENTREGADO           -> "Entregado";
             case CANCELADO           -> "Cancelado";
-            case PENDIENTE_EVALUACION -> "Pendiente de Evaluación"; // <-- AÑADE ESTA LÍNEA
+            case PENDIENTE_EVALUACION -> "Pendiente de Evaluación";
+            case PROCESO_DETENIDO    -> "Proceso Detenido / Rechazado";
         };
     }
 }

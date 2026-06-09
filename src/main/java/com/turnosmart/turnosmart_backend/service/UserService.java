@@ -19,7 +19,6 @@ public class UserService {
         this.roleRepository = roleRepository;
     }
 
-    // LISTAR TODOS LOS USUARIOS ACTIVOS (Para la Cartera de Clientes)
     public List<User> findAllActive() {
         return userRepository.findAll().stream()
                 .filter(User::getEnabled)
@@ -45,9 +44,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-    // CREAR USUARIO (Validando DNI y Email)
     public User register(User user) {
-        // Validar si el DNI ya existe
         if (userRepository.existsByDni(user.getDni())) {
             throw new RuntimeException("El DNI ya se encuentra registrado");
         }
@@ -63,7 +60,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // ACTUALIZAR USUARIO (Protegiendo el DNI)
     public User update(Long id, User updatedUser) {
         User user = findById(id);
 
@@ -91,7 +87,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    // Validar existencia por DNI
     public boolean existsByDni(String dni) {
         return userRepository.existsByDni(dni);
     }

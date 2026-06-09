@@ -30,12 +30,10 @@ public class Lawyer {
     @Lob
     private String bio;
 
-    // Se inicializa por defecto para evitar valores nulos en la BD
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;
 
-    // Mantenemos LAZY para los horarios por rendimiento.
     @OneToMany(mappedBy = "lawyer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<LawyerSchedule> schedules;
 }

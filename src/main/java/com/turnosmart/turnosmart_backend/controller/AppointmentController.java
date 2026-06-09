@@ -44,7 +44,7 @@ public class AppointmentController {
     @PostMapping("/save")
     public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto,
                                   HttpSession session,
-                                  RedirectAttributes redirectAttributes, // Agregado para pasar mensajes flash tras la redirección
+                                  RedirectAttributes redirectAttributes,
                                   Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/login";
@@ -59,16 +59,13 @@ public class AppointmentController {
                 }
             }
 
-            // 1. Crear el trámite (se asigna el abogado automáticamente por carga de trabajo)
             com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
                     appointmentService.createAppointment(dto, loggedUser.getId());
 
-            // 2. Recuperar la entidad completa mediante el ticket para extraer el abogado asignado
             Appointment expediente = appointmentService.findByTicket(nuevoTramite.getTicketNumber());
             User datosAbogado = expediente.getLawyer().getUser();
             String nombreCompletoAbogado = datosAbogado.getFirstName() + " " + datosAbogado.getLastName();
 
-            // 3. Crear el mensaje de éxito dinámico usando Flash Attributes
             redirectAttributes.addFlashAttribute("successMessage",
                     "¡Trámite generado con éxito! Ticket: " + nuevoTramite.getTicketNumber() +
                             ". Asignado automáticamente al Especialista: " + nombreCompletoAbogado);

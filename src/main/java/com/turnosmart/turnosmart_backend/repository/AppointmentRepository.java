@@ -16,10 +16,6 @@ import java.util.Optional;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
-    // =========================================================
-    // MÉTODOS PARA DASHBOARD / ANALYTICS
-    // =========================================================
-
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     long countByStatusAndCreatedAtBetween(AppointmentStatus status, LocalDateTime start, LocalDateTime end);
@@ -30,11 +26,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "LEFT JOIN FETCH a.lawyer")
     List<Appointment> findAllWithDetails();
 
-
-    // =========================================================
-    // MÉTODOS DE NEGOCIO (Regla de cupos por abogado)
-    // =========================================================
-
     long countByLawyerIdAndAppointmentDate(Long lawyerId, LocalDate date);
 
     boolean existsByLawyerIdAndAppointmentDateAndAppointmentTime(Long lawyerId, LocalDate date, LocalTime time);
@@ -44,22 +35,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             "GROUP BY a.appointmentDate HAVING COUNT(a) >= 6")
     List<LocalDate> findFullDaysByLawyer(@Param("lawyerId") Long lawyerId);
 
-
-    // =========================================================
-    // BÚSQUEDAS Y BANDEJAS (Sincronizados con TramiteController)
-    // =========================================================
-
-    /**
-     * Busca trámites de un cliente específico.
-     * Usamos JOIN FETCH para que el Dashboard del Cliente cargue rápido los nombres de trámites.
-     */
     @Query("SELECT a FROM Appointment a JOIN FETCH a.procedureType WHERE a.client.id = :clientId")
     List<Appointment> findByClientId(@Param("clientId") Long clientId);
 
-    /**
-     * Buscar trámites asignados a un abogado.
-     * JOIN FETCH a.client es vital para que el Abogado vea los nombres de sus clientes en la tabla.
-     */
     @Query("SELECT a FROM Appointment a " +
             "JOIN FETCH a.client " +
             "JOIN FETCH a.procedureType " +

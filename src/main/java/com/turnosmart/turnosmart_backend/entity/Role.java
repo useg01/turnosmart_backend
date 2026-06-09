@@ -10,7 +10,7 @@ public class Role {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
-    private String name;           // ROLE_CLIENTE, ROLE_RECEPCION, ROLE_NOTARIO, ROLE_ADMIN
+    private String name;
 
     private String description;
 }

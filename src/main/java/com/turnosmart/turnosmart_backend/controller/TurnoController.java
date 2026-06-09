@@ -35,7 +35,6 @@ public class TurnoController {
     @PostMapping("/turnos")
     public String guardarTurno(@ModelAttribute AppointmentRequestDTO dto,
                                @RequestParam Long clientId) {
-        // CORRECCIÓN: Se remueve el parámetro 'false' ya que createAppointment ahora solo recibe el DTO y el ID del cliente
         appointmentService.createAppointment(dto, clientId);
         return "redirect:/turnos";
     }

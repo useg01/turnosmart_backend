@@ -61,14 +61,12 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
-        // 1. Obtener al abogado con menor carga de trabajo en el sistema
         List<Lawyer> availableLawyers = lawyerRepo.findLawyersOrderByLoad();
         if (availableLawyers.isEmpty()) {
             throw new BusinessException("No existen abogados activos registrados en el sistema para la asignación.");
         }
         Lawyer automaticallyAssignedLawyer = availableLawyers.get(0);
 
-        // 2. Validar cliente y procedimiento
         User client = userRepo.findById(clientUserId)
                 .orElseThrow(() -> new BusinessException("Usuario cliente no encontrado."));
 
@@ -136,7 +134,7 @@ public class AppointmentService {
 
 
     private void registrarLog(Appointment app, String oldS, String newS, String comment, Long userId) {
-        // 1. Buscamos el usuario por su ID
+
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado para el log"));
 

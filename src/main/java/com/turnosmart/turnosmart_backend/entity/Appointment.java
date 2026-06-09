@@ -46,30 +46,27 @@ public class Appointment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AppointmentStatus status; // SOLICITADO, REVISION, REGULARIZAR, CONFORME, etc.
+    private AppointmentStatus status;
 
-    private String priority = "Normal"; // Para el semáforo del Dashboard (Alta, Normal, Baja)
-
-    @Column(columnDefinition = "TEXT")
-    private String clientNotes; // Nota u observación inicial que deja el cliente
+    private String priority = "Normal";
 
     @Column(columnDefinition = "TEXT")
-    private String lawyerNotes; // Respuesta, feedback o comentarios del abogado
+    private String clientNotes;
+
+    @Column(columnDefinition = "TEXT")
+    private String lawyerNotes;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
-    // Relación con el historial de cambios de estado
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentLog> logs = new ArrayList<>();
 
-    // Relación con los archivos físicos subidos (PDF, imágenes)
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentDocument> documents = new ArrayList<>();
 
-    // Ciclos de vida para fechas automáticas
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -83,7 +80,6 @@ public class Appointment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Método helper para añadir logs fácilmente
     public void addLog(AppointmentLog log) {
         logs.add(log);
         log.setAppointment(this);

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluación de Expediente Notarial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="card border-0 shadow-sm rounded-4 p-5 bg-white">
+        <h2 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-check text-primary me-2"></i> Evaluación de Expediente: <span th:text="${expediente.ticketNumber}">TS-XXXX</span></h2>
+
+        <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">1. Datos Generales del Trámite</h5>
+        <div class="row mb-4 g-3">
+            <div class="col-md-6"><strong>Tipo de Poder:</strong> <span th:text="${expediente.procedureType.name}"></span></div>
+            <div class="col-md-6"><strong>Motivo:</strong> <span th:text="${expediente.notes}"></span></div>
+            <div class="col-12"><strong>Descripción de Facultades:</strong> <p class="bg-light p-3 rounded-3 mt-1 text-muted" th:text="${expediente.clientNotes}"></p></div>
+        </div>
+
+        <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">2. Datos del Representado (Otorga el Poder)</h5>
+        <div class="row mb-4 g-3">
+            <div class="col-md-4"><strong>DNI:</strong> <span th:text="${expediente.repDni}"></span></div>
+            <div class="col-md-4"><strong>Nombres:</strong> <span th:text="${expediente.repNombres}"></span></div>
+            <div class="col-md-4"><strong>Apellidos:</strong> <span th:text="${expediente.repApellidos}"></span></div>
+            <div class="col-md-4"><strong>Estado Civil:</strong> <span th:text="${expediente.repEstadoCivil}"></span></div>
+            <div class="col-md-4"><strong>Nacionalidad:</strong> <span th:text="${expediente.repNacionalidad}"></span></div>
+            <div class="col-md-4"><strong>Teléfono:</strong> <span th:text="${expediente.repTelefono}"></span></div>
+            <div class="col-12"><strong>Dirección Completa:</strong> <span th:text="${expediente.repDireccion}"></span></div>
+        </div>
+
+        <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">3. Datos del Apoderado (Recibe las Facultades)</h5>
+        <div class="row mb-4 g-3">
+            <div class="col-md-4"><strong>DNI:</strong> <span th:text="${expediente.apoDni}"></span></div>
+            <div class="col-md-4"><strong>Nombres:</strong> <span th:text="${expediente.apoNombres}"></span></div>
+            <div class="col-md-4"><strong>Apellidos:</strong> <span th:text="${expediente.apoApellidos}"></span></div>
+            <div class="col-md-6"><strong>Correo:</strong> <span th:text="${expediente.apoCorreo}"></span></div>
+            <div class="col-md-6"><strong>Teléfono:</strong> <span th:text="${expediente.apoTelefono}"></span></div>
+            <div class="col-12"><strong>Dirección:</strong> <span th:text="${expediente.apoDireccion}"></span></div>
+        </div>
+
+        <div class="d-flex gap-3 justify-content-end mt-5 pt-4 border-top">
+            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalDetener">
+                <i class="bi bi-x-circle me-2"></i> Detener Proceso
+            </button>
+
+            <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
+                <input type="hidden" name="accion" value="continuar">
+                <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-semibold">
+                    <i class="bi bi-check-circle me-2"></i> Continuar Proceso
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetener" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <form th:action="@{/appointments/evaluar/{id}(id=${expediente.id})}" method="post">
+                <input type="hidden" name="accion" value="detener">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> ¿Detener este expediente?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="text-muted small">Por favor, detalle los motivos técnicos o legales por los cuales el trámite no es viable. El cliente podrá ver este comentario de inmediato.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Comentarios de Observación</label>
+                        <textarea class="form-control rounded-3" name="comentario" rows="4" placeholder="Ej: El representado registra DNI caducado en RENIEC o el tipo de personería jurídica no faculta esta acción..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">Confirmar Detención</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

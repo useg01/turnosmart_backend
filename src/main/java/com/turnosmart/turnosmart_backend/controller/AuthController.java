@@ -37,18 +37,15 @@ public class AuthController {
 
         if (user != null && user.getPassword().equals(password)) {
 
-            // 1. Validar que el Set de roles no esté vacío
             if (user.getRoles() == null || user.getRoles().isEmpty()) {
                 model.addAttribute("error", "El usuario no tiene un rol asignado en el sistema.");
                 return "login";
             }
 
-            // 2. Extraer todos los nombres de los roles que posee el usuario en una lista limpia
             List<String> roleNames = user.getRoles().stream()
                     .map(role -> role.getName().toUpperCase())
                     .toList();
 
-            // 3. Determinar la interfaz por orden de jerarquía estricta
             String interfaz;
 
             if (roleNames.contains("ROLE_ADMIN") || roleNames.contains("ADMIN")) {
@@ -59,11 +56,9 @@ public class AuthController {
                 interfaz = "CLIENTE";
             }
 
-            // 4. Guardar en sesión de forma segura
             session.setAttribute("loggedUser", user);
             session.setAttribute("rolElegido", interfaz);
 
-            // 5. Redirección automática basada en la jerarquía detectada
             return switch (interfaz) {
                 case "ADMIN" -> "redirect:/admin/dashboard";
                 case "ABOGADO" -> "redirect:/abogado/dashboard";
@@ -75,7 +70,6 @@ public class AuthController {
         return "login";
     }
 
-    // --- PANTALLA DE REGISTRO (GET) ---
     @GetMapping("/registro")
     public String registro(Model model) {
         if (!model.containsAttribute("usuario")) {
@@ -84,7 +78,6 @@ public class AuthController {
         return "registro";
     }
 
-    // --- PROCESAR EL REGISTRO (POST) ---
     @PostMapping("/registro")
     public String register(@ModelAttribute("usuario") User user, Model model) {
         try {

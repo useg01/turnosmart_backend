@@ -41,7 +41,6 @@ public class AppointmentRequestDTO {
     @NotNull(message = "Seleccione el tipo de trámite")
     private Long procedureTypeId;
 
-    // NULL = cualquier abogado disponible
     private Long lawyerId;
 
     private String notes;
