@@ -14,6 +14,23 @@ public class AppointmentRequestDTO {
     private String representationType;
     private String identifier;
     private String businessName;
+    private String repDni;
+    private String repNombres;
+    private String repApellidos;
+    private String repFechaNac;
+    private String repEstadoCivil;
+    private String repNacionalidad;
+    private String repCorreo;
+    private String repTelefono;
+    private String repDireccion;
+
+    //datos del apoderado
+    private String apoDni;
+    private String apoNombres;
+    private String apoApellidos;
+    private String apoCorreo;
+    private String apoTelefono;
+    private String apoDireccion;
 
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;

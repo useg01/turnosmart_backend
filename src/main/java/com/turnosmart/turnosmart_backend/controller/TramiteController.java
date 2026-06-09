@@ -45,14 +45,21 @@ public class TramiteController {
     public String dashboardAbogado(HttpSession session, Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
 
-        List<Appointment> tramites = appointmentRepository.findByLawyerId(loggedUser.getId());
+        List<Appointment> tramites = appointmentRepository.findAll();
+        List<Appointment> filtrados = new ArrayList<>();
 
-        List<Appointment> listaSegura = (tramites != null) ? tramites : new ArrayList<>();
+        if (tramites != null && loggedUser != null) {
+            for (Appointment a : tramites) {
+                if (a.getLawyer() != null && a.getLawyer().getUser() != null && loggedUser.getId().equals(a.getLawyer().getUser().getId())) {
+                    filtrados.add(a);
+                }
+            }
+        }
 
-        model.addAttribute("tramites", listaSegura);
-        model.addAttribute("citas", listaSegura);
-        model.addAttribute("citasHoy", listaSegura);
-        model.addAttribute("total", listaSegura.size());
+        model.addAttribute("tramites", filtrados);
+        model.addAttribute("citas", filtrados);
+        model.addAttribute("citasHoy", filtrados);
+        model.addAttribute("total", filtrados.size());
 
         return "abogado/dashboard";
     }

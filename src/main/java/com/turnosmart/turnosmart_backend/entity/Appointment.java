@@ -50,6 +50,12 @@ public class Appointment {
 
     private String priority = "Normal";
 
+    private String representationType;
+
+    private String identifier;
+
+    private String businessName;
+
     @Column(columnDefinition = "TEXT")
     private String clientNotes;
 
@@ -83,18 +89,5 @@ public class Appointment {
     public void addLog(AppointmentLog log) {
         logs.add(log);
         log.setAppointment(this);
-    }
-
-    public void setNotes(String comentario) {
-    }
-
-    public void setRepresentationType(String representationType) {
-    }
-
-    public void setBusinessName(String businessName) {
-    }
-
-    public void setIdentifier(String identifier) {
-
     }
 }

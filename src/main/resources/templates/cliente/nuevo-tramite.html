@@ -160,13 +160,8 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Motivo del Trámite</label>
-                            <input type="text" th:field="*{notes}" class="form-control" placeholder="Ej. Compraventa vehicular, cobro de pensión..." required>
-                        </div>
-
-                        <div class="col-12">
                             <label class="form-label">Descripción del Requerimiento</label>
-                            <textarea class="form-control" rows="3" placeholder="Detalle las facultades que se van a otorgar..." required></textarea>
+                            <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="Detalle las facultades que se van a otorgar..." required></textarea>
                         </div>
 
                         <div class="col-md-6">
@@ -321,7 +316,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Guardar datos del modal de Representado en Inputs ocultos de forma estructurada
     function guardarDatosRepresentado() {
         const dni = document.getElementById('mRepDni').value;
         const nom = document.getElementById('mRepNombres').value;
@@ -332,7 +326,6 @@
             return;
         }
 
-        // Pasar valores de la ventana modal a los inputs ocultos del formulario principal
         document.getElementById('hRepDni').value = dni;
         document.getElementById('hRepNombres').value = nom;
         document.getElementById('hRepApellidos').value = ape;
@@ -343,16 +336,13 @@
         document.getElementById('hRepTelefono').value = document.getElementById('mRepTelefono').value;
         document.getElementById('hRepDireccion').value = document.getElementById('mRepDireccion').value;
 
-        // Modificar feedback visual en el panel principal
         document.getElementById('summaryRepresentado').innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Registrado: ${nom} ${ape} (${dni})</span>`;
         document.getElementById('iconCheckRep').className = "bi bi-check-circle-fill text-success";
 
-        // Cerrar ventana modal de forma limpia
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalRepresentado'));
         modal.hide();
     }
 
-    // Guardar datos del modal de Apoderado en Inputs ocultos
     function guardarDatosApoderado() {
         const dni = document.getElementById('mApoDni').value;
         const nom = document.getElementById('mApoNombres').value;
@@ -377,7 +367,6 @@
         modal.hide();
     }
 
-    // Lógica condicional de CUS05
     function evaluarTipoTramite() {
         const combo = document.getElementById('cbProcedureType');
         if (!combo.value) return;
@@ -391,7 +380,22 @@
             seccionCUS05.style.display = 'none';
         }
     }
+
+    function actualizarLabelsCUS05() {
+        const type = document.getElementById('repoType').value;
+        const lblId = document.getElementById('lblIdentifier');
+        const lblName = document.getElementById('lblName');
+        if(type === 'NATURAL') {
+            lblId.innerText = 'DNI del Representado';
+            lblName.innerText = 'Nombre Completo del Representado';
+        } else {
+            lblId.innerText = 'RUC de la Empresa';
+            lblName.innerText = 'Razón Social de la Representada';
+        }
+    }
+
     document.getElementById('cbProcedureType').addEventListener('change', evaluarTipoTramite);
+    window.addEventListener('DOMContentLoaded', evaluarTipoTramite);
 </script>
 </body>
 </html>

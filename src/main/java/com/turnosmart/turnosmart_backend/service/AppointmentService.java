@@ -27,7 +27,6 @@ public class AppointmentService {
     private final ProcedureTypeRepository procedureTypeRepo;
     private final AppointmentLogRepository logRepo;
 
-
     public long count() {
         return appointmentRepo.count();
     }
@@ -35,7 +34,6 @@ public class AppointmentService {
     public List<Appointment> findAll() {
         return appointmentRepo.findAllWithDetails();
     }
-
 
     @Transactional(readOnly = true)
     public List<String> getAvailableSlots(LocalDate date, Long lawyerId) {
@@ -78,14 +76,59 @@ public class AppointmentService {
         app.setClient(client);
         app.setLawyer(automaticallyAssignedLawyer);
         app.setProcedureType(procedure);
+        app.setClientDni(client.getDni());
 
+        // Mapeo de campos de cabecera de representación
         app.setRepresentationType(dto.getRepresentationType());
         app.setIdentifier(dto.getIdentifier());
         app.setBusinessName(dto.getBusinessName());
-
-        app.setNotes(dto.getNotes());
-
         app.setStatus(AppointmentStatus.PENDIENTE_EVALUACION);
+
+        // =========================================================================
+        // CONSTRUCCIÓN DE LA HOJA INFORMATIVA COMPLETA (TEXTO PLANO)
+        // =========================================================================
+        StringBuilder sb = new StringBuilder();
+        sb.append("========================================================\n");
+        sb.append("           EXPEDIENTE DETALLADO DE SOLICITUD            \n");
+        sb.append("========================================================\n\n");
+
+        sb.append("[REQUERIMIENTO PRINCIPAL]\n");
+        sb.append("· Descripción/Notas del Cliente: ").append(dto.getNotes() != null ? dto.getNotes() : "No especificado").append("\n\n");
+
+        // Si se llenó el módulo de representación legal (Persona Jurídica o Natural)
+        if (dto.getRepresentationType() != null && !dto.getRepresentationType().trim().isEmpty()) {
+            sb.append("[MÓDULO DE REPRESENTACIÓN LEGAL]\n");
+            sb.append("· Tipo de Persona: ").append(dto.getRepresentationType()).append("\n");
+            sb.append("· Identificador / RUC: ").append(dto.getIdentifier() != null ? dto.getIdentifier() : "N/A").append("\n");
+            sb.append("· Razón Social / Empresa: ").append(dto.getBusinessName() != null ? dto.getBusinessName() : "N/A").append("\n\n");
+        }
+
+        // Datos del Representado (Otorga) si es que se registraron en el modal
+        if (dto.getRepDni() != null && !dto.getRepDni().trim().isEmpty()) {
+            sb.append("[DATOS DEL REPRESENTADO (OTORGA EN EL PODER)]\n");
+            sb.append("· DNI: ").append(dto.getRepDni()).append("\n");
+            sb.append("· Nombres Completos: ").append(dto.getRepNombres()).append(" ").append(dto.getRepApellidos()).append("\n");
+            sb.append("· Fecha de Nacimiento: ").append(dto.getRepFechaNac() != null ? dto.getRepFechaNac() : "No declarada").append("\n");
+            sb.append("· Estado Civil: ").append(dto.getRepEstadoCivil() != null ? dto.getRepEstadoCivil() : "No declarado").append("\n");
+            sb.append("· Nacionalidad: ").append(dto.getRepNacionalidad() != null ? dto.getRepNacionalidad() : "No declarada").append("\n");
+            sb.append("· Correo: ").append(dto.getRepCorreo() != null ? dto.getRepCorreo() : "No declarado").append("\n");
+            sb.append("· Teléfono: ").append(dto.getRepTelefono() != null ? dto.getRepTelefono() : "No registrado").append("\n");
+            sb.append("· Dirección Completa: ").append(dto.getRepDireccion() != null ? dto.getRepDireccion() : "No registrada").append("\n\n");
+        }
+
+        // Datos del Apoderado (Recibe) si es que se registraron en el modal
+        if (dto.getApoDni() != null && !dto.getApoDni().trim().isEmpty()) {
+            sb.append("[DATOS DEL APODERADO (RECIBE EL PODER)]\n");
+            sb.append("· DNI: ").append(dto.getApoDni()).append("\n");
+            sb.append("· Nombres Completos: ").append(dto.getApoNombres()).append(" ").append(dto.getApoApellidos()).append("\n");
+            sb.append("· Correo Electrónico: ").append(dto.getApoCorreo() != null ? dto.getApoCorreo() : "No declarado").append("\n");
+            sb.append("· Teléfono / Celular: ").append(dto.getApoTelefono() != null ? dto.getApoTelefono() : "No registrado").append("\n");
+            sb.append("· Dirección de Residencia: ").append(dto.getApoDireccion() != null ? dto.getApoDireccion() : "No registrada").append("\n");
+            sb.append("========================================================\n");
+        }
+
+        // Guardamos todo el bloque de texto formateado dentro de clientNotes
+        app.setClientNotes(sb.toString());
 
         Appointment saved = appointmentRepo.save(app);
 
@@ -104,7 +147,7 @@ public class AppointmentService {
 
         String estadoAnterior = app.getStatus().name();
         app.setStatus(nuevoEstado);
-        app.setNotes(comentario);
+        app.setLawyerNotes(comentario);
 
         appointmentRepo.save(app);
 
@@ -132,9 +175,7 @@ public class AppointmentService {
         registrarLog(app, app.getStatus().name(), app.getStatus().name(), "Se cargaron nuevos documentos adjuntos.", userId);
     }
 
-
     private void registrarLog(Appointment app, String oldS, String newS, String comment, Long userId) {
-
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado para el log"));
 
@@ -143,9 +184,7 @@ public class AppointmentService {
         log.setOldStatus(oldS);
         log.setNewStatus(newS);
         log.setComments(comment);
-
         log.setChangedBy(user);
-
         log.setChangedAt(LocalDateTime.now());
         logRepo.save(log);
     }
