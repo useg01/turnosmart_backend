@@ -80,6 +80,16 @@ public class AppointmentController {
         }
     }
 
+    @PostMapping("/api/tramites/pagar/{id}")
+    public String procesarPago(@PathVariable Long id,
+                               @RequestParam("paymentMethod") String paymentMethod,
+                               @RequestParam("operationNumber") String operationNumber,
+                               RedirectAttributes redirectAttributes) {
+        
+        redirectAttributes.addFlashAttribute("successMessage", "Pago registrado con éxito. El especialista validará el número de operación.");
+        return "redirect:/cliente/dashboard";
+    }
+
     @GetMapping("/api/dias-llenos")
     @ResponseBody
     public ResponseEntity<List<LocalDate>> getDiasLlenos(@RequestParam Long lawyerId) {

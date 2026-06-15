@@ -73,6 +73,10 @@ public class Appointment {
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentDocument> documents = new ArrayList<>();
 
+    private String paymentMethod;
+    private String operationNumber;
+    private Boolean isPaid = false;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
