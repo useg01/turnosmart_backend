@@ -355,7 +355,7 @@
                                 </div>
 
                                 <div th:id="'instructions' + ${t.id}" class="alert alert-secondary border-0 rounded-4 p-3 mb-4 small">
-                                    <i class="bi bi-info-circle-fill me-2"></i> Escanea el código QR de la Notaría al número <strong>940 049 254</strong>.
+                                    <i class="bi bi-info-circle-fill me-2"></i> Yapea al siguiente número <strong>956 503 890</strong>.
                                 </div>
 
                                 <div class="mb-3">
@@ -382,7 +382,7 @@
     function updatePaymentInstructions(radio, id) {
         const instructionsDiv = document.getElementById('instructions' + id);
         if (radio.value === 'YAPE') {
-            instructionsDiv.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Escanea el código QR de la Notaría al número <strong>987-654-321</strong>.';
+            instructionsDiv.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Yapea al siguiente número <strong>956 503 890</strong>.';
         } else if (radio.value === 'TRANSFERENCIA') {
             instructionsDiv.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Transfiere a la Cuenta Corriente BCP: <strong>191-XXXXXX-X-XX</strong> (CCI: 002-191-XXXXXXXXX-XX).';
         }
