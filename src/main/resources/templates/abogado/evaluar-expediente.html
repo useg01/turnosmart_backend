@@ -2,83 +2,300 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación de Expediente Notarial</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .pe-3::-webkit-scrollbar {
+            width: 6px;
+        }
+        .pe-3::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body class="bg-light">
+
 <div class="container py-5">
     <div class="card border-0 shadow-sm rounded-4 p-5 bg-white">
-        <h2 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-check text-primary me-2"></i> Evaluación de Expediente: <span th:text="${expediente.ticketNumber}">TS-XXXX</span></h2>
+        <h2 class="fw-bold text-dark mb-4">
+            <i class="bi bi-file-earmark-check text-primary me-2"></i> Evaluación de Expediente:
+            <span th:text="${expediente.ticketNumber}">TS-XXXX</span>
+        </h2>
 
         <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">1. Datos Generales del Trámite</h5>
         <div class="row mb-4 g-3">
-            <div class="col-md-6"><strong>Tipo de Poder:</strong> <span th:text="${expediente.procedureType.name}"></span></div>
-            <div class="col-md-6"><strong>Motivo:</strong> <span th:text="${expediente.notes}"></span></div>
-            <div class="col-12"><strong>Descripción de Facultades:</strong> <p class="bg-light p-3 rounded-3 mt-1 text-muted" th:text="${expediente.clientNotes}"></p></div>
-        </div>
-
-        <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">2. Datos del Representado (Otorga el Poder)</h5>
-        <div class="row mb-4 g-3">
-            <div class="col-md-4"><strong>DNI:</strong> <span th:text="${expediente.repDni}"></span></div>
-            <div class="col-md-4"><strong>Nombres:</strong> <span th:text="${expediente.repNombres}"></span></div>
-            <div class="col-md-4"><strong>Apellidos:</strong> <span th:text="${expediente.repApellidos}"></span></div>
-            <div class="col-md-4"><strong>Estado Civil:</strong> <span th:text="${expediente.repEstadoCivil}"></span></div>
-            <div class="col-md-4"><strong>Nacionalidad:</strong> <span th:text="${expediente.repNacionalidad}"></span></div>
-            <div class="col-md-4"><strong>Teléfono:</strong> <span th:text="${expediente.repTelefono}"></span></div>
-            <div class="col-12"><strong>Dirección Completa:</strong> <span th:text="${expediente.repDireccion}"></span></div>
-        </div>
-
-        <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">3. Datos del Apoderado (Recibe las Facultades)</h5>
-        <div class="row mb-4 g-3">
-            <div class="col-md-4"><strong>DNI:</strong> <span th:text="${expediente.apoDni}"></span></div>
-            <div class="col-md-4"><strong>Nombres:</strong> <span th:text="${expediente.apoNombres}"></span></div>
-            <div class="col-md-4"><strong>Apellidos:</strong> <span th:text="${expediente.apoApellidos}"></span></div>
-            <div class="col-md-6"><strong>Correo:</strong> <span th:text="${expediente.apoCorreo}"></span></div>
-            <div class="col-md-6"><strong>Teléfono:</strong> <span th:text="${expediente.apoTelefono}"></span></div>
-            <div class="col-12"><strong>Dirección:</strong> <span th:text="${expediente.apoDireccion}"></span></div>
+            <div class="col-md-12">
+                <strong>Tipo de Trámite / Poder:</strong>
+                <span th:text="${expediente.procedureType != null ? expediente.procedureType.name : 'No especificado'}"></span>
+            </div>
         </div>
 
         <div class="d-flex gap-3 justify-content-end mt-5 pt-4 border-top">
-            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalDetener">
-                <i class="bi bi-x-circle me-2"></i> Detener Proceso
+            <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAnalisisExpediente">
+                <i class="bi bi-eye me-2"></i> Abrir Análisis Detallado
             </button>
-
-            <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
-                <input type="hidden" name="accion" value="continuar">
-                <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-semibold">
-                    <i class="bi bi-check-circle me-2"></i> Continuar Proceso
-                </button>
-            </form>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalDetener" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 shadow">
-            <form th:action="@{/appointments/evaluar/{id}(id=${expediente.id})}" method="post">
-                <input type="hidden" name="accion" value="detener">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> ¿Detener este expediente?</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body py-3">
-                    <p class="text-muted small">Por favor, detalle los motivos técnicos o legales por los cuales el trámite no es viable. El cliente podrá ver este comentario de inmediato.</p>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Comentarios de Observación</label>
-                        <textarea class="form-control rounded-3" name="comentario" rows="4" placeholder="Ej: El representado registra DNI caducado en RENIEC o el tipo de personería jurídica no faculta esta acción..." required></textarea>
+<div class="modal fade" id="modalAnalisisExpediente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow border-0">
+            <div class="modal-header px-4 pt-4 border-0">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-text text-primary"></i>
+                    Análisis de Expediente: <span class="text-primary" th:text="${expediente.ticketNumber}">TS-A3D10D78</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="row g-4">
+
+                    <div class="col-lg-7 border-end">
+                        <div class="pe-3" style="max-height: 550px; overflow-y: auto;">
+                            <h6 class="fw-bold text-uppercase text-muted small mb-4 tracking-wider">
+                                <i class="bi bi-folder2-open me-1"></i> Expediente Digitalizado
+                            </h6>
+
+                            <div id="rawNotesData" style="display:none;" th:text="${expediente.clientNotes}"></div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-4" style="background-color: #f8fafc; border-left: 4px solid #0d6efd !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-2">
+                                            <i class="bi bi-chat-left-text-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Requerimiento Principal</h6>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border mt-2">
+                                        <small class="text-muted d-block mb-1 fw-semibold">Descripción / Notas del Cliente:</small>
+                                        <p class="text-dark mb-0 fw-medium" style="font-size: 0.95rem;" id="lblRequerimientoDescripcion">Cargando...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-4" style="background-color: #f8fafc; border-left: 4px solid #198754 !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success bg-opacity-10 text-success rounded p-2 me-2">
+                                            <i class="bi bi-person-badge-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Datos del Representado (Otorga en el Poder)</h6>
+                                    </div>
+
+                                    <div class="row g-3 bg-white p-3 rounded border mx-0">
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">DNI / Identificación</small>
+                                            <strong class="text-dark" id="lblRepDni">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Nombres Completos</small>
+                                            <strong class="text-dark" id="lblRepNombres">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Fecha de Nacimiento</small>
+                                            <span class="text-dark fw-semibold" id="lblRepFechaNac">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Estado Civil</small>
+                                            <span class="badge bg-light text-dark border px-2.5 py-1 mt-1" id="lblRepEstadoCivil">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Nacionalidad</small>
+                                            <span class="text-dark fw-semibold" id="lblRepNacionalidad">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Contacto y Ubicación</small>
+                                            <span class="text-dark d-block small" id="lblRepTelefono"><i class="bi bi-telephone text-muted me-1"></i> -</span>
+                                            <span class="text-dark d-block small" id="lblRepCorreo"><i class="bi bi-envelope text-muted me-1"></i> -</span>
+                                            <span class="text-dark d-block small" id="lblRepDireccion"><i class="bi bi-geo-alt text-muted me-1"></i> -</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-2" style="background-color: #f8fafc; border-left: 4px solid #6f42c1 !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-purple bg-opacity-10 text-purple rounded p-2 me-2" style="color: #6f42c1; background-color: rgba(111, 66, 193, 0.1);">
+                                            <i class="bi bi-person-check-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Datos del Apoderado (Recibe el Poder)</h6>
+                                    </div>
+
+                                    <div class="row g-3 bg-white p-3 rounded border mx-0 mb-3">
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">DNI del Apoderado</small>
+                                            <strong class="text-dark" id="lblApoDni">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Nombres Completos</small>
+                                            <strong class="text-dark" id="lblApoNombres">Cargando...</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border">
+                                        <small class="text-primary d-block mb-1 fw-bold"><i class="bi bi-shield-shaded me-1"></i> Facultades Especiales Otorgadas:</small>
+                                        <p class="text-dark fw-medium mb-0 small" style="white-space: pre-wrap; line-height: 1.4;" id="lblApoFacultades">
+                                            Cargando facultades...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
+
+                    <div class="col-lg-5 ps-lg-4">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-success me-1"></i> Dictamen Técnico Legal</h6>
+                        <p class="text-muted small mb-4">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
+
+                        <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Comentario u Observación Evaluativa</label>
+                                <textarea class="form-control rounded-3" name="comentario" id="txtComentarioModal" rows="5"
+                                          style="font-size: 0.9rem;" placeholder="Obligatorio únicamente si decide Detener el Proceso..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="accion" value="continuar" class="btn btn-success py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                    <i class="bi bi-check-circle-fill"></i> Continuar Proceso
+                                </button>
+                                <button type="button" onclick="validarYDetener()" class="btn btn-outline-danger py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-x-circle-fill"></i> Detener Proceso
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">Confirmar Detención</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rawText = document.getElementById("rawNotesData").innerText;
+
+        // 1. Fragmentar por bloques estructurales principales
+        const partsReq = rawText.split(/\[REQUERIMIENTO PRINCIPAL\]/i);
+        const partsRep = rawText.split(/\[DATOS DEL REPRESENTADO[^\]]*\]/i);
+        const partsApo = rawText.split(/\[DATOS DEL APODERADO[^\]]*\]/i);
+
+        let bloqueRequerimiento = "";
+        let bloqueRepresentado = "";
+        let bloqueApoderado = "";
+
+        if (partsReq.length > 1) {
+            bloqueRequerimiento = partsReq[1].split("[")[0];
+        }
+        if (partsRep.length > 1) {
+            bloqueRepresentado = partsRep[1].split("[")[0];
+        }
+        if (partsApo.length > 1) {
+            bloqueApoderado = partsApo[1].split("===")[0];
+        }
+
+        // 2. Extractor por coincidencia lineal
+        function extraerValor(textoBloque, claveBusqueda) {
+            if (!textoBloque) return "No registrado";
+            const lineas = textoBloque.split("\n");
+            for (let linea of lineas) {
+                if (linea.toLowerCase().includes(claveBusqueda.toLowerCase())) {
+                    const partes = linea.split(":");
+                    if (partes.length > 1) {
+                        return partes.slice(1).join(":").trim();
+                    }
+                }
+            }
+            return "No registrado";
+        }
+
+        // 3. Inyectar datos en la tarjeta de Requerimiento
+        const descReq = extraerValor(bloqueRequerimiento, "Descripción");
+        document.getElementById("lblRequerimientoDescripcion").innerText = descReq !== "No registrado" ? descReq : "PRUEBA";
+
+        // 4. Inyectar datos en la tarjeta de Representado
+        document.getElementById("lblRepDni").innerText = extraerValor(bloqueRepresentado, "DNI");
+        document.getElementById("lblRepNombres").innerText = extraerValor(bloqueRepresentado, "Nombres Completos");
+        document.getElementById("lblRepFechaNac").innerText = extraerValor(bloqueRepresentado, "Fecha de Nacimiento");
+        document.getElementById("lblRepEstadoCivil").innerText = extraerValor(bloqueRepresentado, "Estado Civil");
+        document.getElementById("lblRepNacionalidad").innerText = extraerValor(bloqueRepresentado, "Nacionalidad");
+
+        // Elementos compuestos de la sub-lista de contacto
+        const telRep = extraerValor(bloqueRepresentado, "Teléfono");
+        const mailRep = extraerValor(bloqueRepresentado, "Correo");
+        const dirRep = extraerValor(bloqueRepresentado, "Dirección");
+
+        document.getElementById("lblRepTelefono").innerHTML = `<i class="bi bi-telephone text-muted me-1"></i> ${telRep}`;
+        document.getElementById("lblRepCorreo").innerHTML = `<i class="bi bi-envelope text-muted me-1"></i> ${mailRep}`;
+        document.getElementById("lblRepDireccion").innerHTML = `<i class="bi bi-geo-alt text-muted me-1"></i> ${dirRep}`;
+
+        // 5. Inyectar datos en la tarjeta de Apoderado
+        document.getElementById("lblApoDni").innerText = extraerValor(bloqueApoderado, "DNI");
+        document.getElementById("lblApoNombres").innerText = extraerValor(bloqueApoderado, "Nombres Completos");
+
+        // --- CORRECCIÓN ESTRUCTURAL EN EXTRACCIÓN DE FACULTADES ---
+        const lineasApo = bloqueApoderado.split("\n");
+        let capturarFacultades = [];
+        let pasoDatosBasicos = false;
+
+        for (let linea of lineasApo) {
+            let lLimpia = linea.trim();
+            if (!lLimpia) continue;
+
+            // Detectamos que ya pasamos la cabecera del apoderado
+            if (lLimpia.toLowerCase().includes("dni:") || lLimpia.toLowerCase().includes("nombres completos:")) {
+                pasoDatosBasicos = true;
+                continue;
+            }
+
+            if (pasoDatosBasicos) {
+                if (/correo|teléfono|celular|dirección|residencia/i.test(lLimpia) && /no declarado|no registrado|no registrada/i.test(lLimpia)) {
+                    continue;
+                }
+
+                if (!lLimpia.includes("===")) {
+                    if (lLimpia.toLowerCase().includes("facultades:")) {
+                        const partes = lLimpia.split(":");
+                        if (partes.length > 1 && partes[1].trim()) {
+                            capturarFacultades.push(partes.slice(1).join(":").trim());
+                        }
+                    } else {
+                        capturarFacultades.push(lLimpia.replace(/^·\s*|^•\s*|^\-\s*/, "")); // Limpia viñetas
+                    }
+                }
+            }
+        }
+
+        const textoFinalFacultades = capturarFacultades.join("\n").trim();
+        document.getElementById("lblApoFacultades").innerText = textoFinalFacultades ? textoFinalFacultades : "Facultad General de Representación sobre actos notariales y administrativos de forma Conforme.";
+    });
+
+    function validarYDetener() {
+        const txtComentario = document.getElementById('txtComentarioModal');
+
+        if (!txtComentario.value.trim()) {
+            alert("Para poder detener el proceso, es obligatorio que redacte un comentario u observación evaluativa indicando los motivos.");
+            txtComentario.focus();
+            return;
+        }
+
+        const formPadre = txtComentario.closest('form');
+        const hiddenAccion = document.createElement('input');
+        hiddenAccion.type = 'hidden';
+        hiddenAccion.name = 'accion';
+        hiddenAccion.value = 'detener';
+
+        formPadre.appendChild(hiddenAccion);
+        formPadre.submit();
+    }
+</script>
 </body>
 </html>

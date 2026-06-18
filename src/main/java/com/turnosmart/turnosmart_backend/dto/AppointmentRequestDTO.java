@@ -24,13 +24,14 @@ public class AppointmentRequestDTO {
     private String repTelefono;
     private String repDireccion;
 
-    //datos del apoderado
+    // Datos del apoderado
     private String apoDni;
     private String apoNombres;
     private String apoApellidos;
     private String apoCorreo;
     private String apoTelefono;
     private String apoDireccion;
+    private String apoFacultades; // 🔥 AGREGADO AQUÍ COMO STRING
 
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
@@ -61,4 +62,6 @@ public class AppointmentRequestDTO {
     private Long lawyerId;
 
     private String notes;
+
+    // ❌ El método manual vacío que estaba aquí fue eliminado.
 }

@@ -35,6 +35,9 @@ public class AppointmentController {
             return "redirect:/admin/dashboard";
         }
 
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        model.addAttribute("usuarioLogueado", loggedUser);
+
         model.addAttribute("abogados", lawyerService.findAll());
         model.addAttribute("procedimientos", procedureTypeRepo.findAll());
         model.addAttribute("appointmentRequest", new AppointmentRequestDTO());

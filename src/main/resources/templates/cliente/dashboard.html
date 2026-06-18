@@ -188,7 +188,7 @@
             <a th:href="@{/appointments/crear}" class="action-card">
                 <div class="action-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-plus-lg"></i></div>
                 <h5 class="fw-bold text-dark">Nuevo Trámite</h5>
-                <p class="small text-muted mb-0 px-3">Inicia una nueva solicitud y agenda tu cita presencial.</p>
+                <p class="small text-muted mb-0 px-3">Inicia una nueva solicitud.</p>
             </a>
         </div>
 
@@ -249,13 +249,13 @@
                             <div class="col-lg-5 text-lg-end mt-3 mt-lg-0 d-flex flex-wrap justify-content-lg-end gap-2 align-items-center">
                                 <span class="badge badge-pill-custom"
                                       th:classappend="${t.status.name() == 'SOLICITADO' ? 'bg-primary-subtle text-primary-emphasis' :
-                                                       (t.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning-emphasis' :
-                                                       (t.status.name() == 'REGULARIZAR' ? 'bg-danger-subtle text-danger-emphasis' :
-                                                       (t.status.name() == 'PENDIENTE_EVALUACION' ? 'bg-warning-subtle text-warning-emphasis' :
-                                                       (t.status.name() == 'PROCESO_DETENIDO' ? 'bg-danger-subtle text-danger-emphasis' : 'bg-success-subtle text-success-emphasis'))))}"
-                                      th:text="${t.status.name() == 'PENDIENTE_EVALUACION' ? 'PENDIENTE' :
-                                               (t.status.name() == 'CONFORME' ? 'APROBADO' :
-                                               (t.status.name() == 'PROCESO_DETENIDO' ? 'RECHAZADO' : t.status.getLabel()))}">ESTADO</span>
+                       (t.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning-emphasis' :
+                       (t.status.name() == 'REGULARIZAR' ? 'bg-danger-subtle text-danger-emphasis' :
+                       (t.status.name() == 'PENDIENTE_EVALUACION' ? 'bg-warning-subtle text-warning-emphasis' :
+                       (t.status.name() == 'PROCESO_DETENIDO' ? 'bg-danger-subtle text-danger-emphasis' : 'bg-success-subtle text-success-emphasis'))))}"
+                                      th:text="${t.status.name() == 'PENDIENTE_EVALUACION' ? 'EN REVISIÓN' :
+               (t.status.name() == 'CONFORME' ? 'APROBADO' :
+               (t.status.name() == 'PROCESO_DETENIDO' ? 'REGULARIZAR' : t.status.getLabel()))}">ESTADO</span>
 
                                 <button th:if="${t.status.name() == 'CONFORME'}"
                                         type="button"

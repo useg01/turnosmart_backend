@@ -16,14 +16,12 @@
         }
         body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; }
 
-        .stat-card {
-            border: none; border-radius: 12px; transition: all 0.3s;
-            border-bottom: 4px solid transparent;
-        }
-        .stat-card:hover { transform: translateY(-5px); }
-
         .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .status-pill { font-size: 0.75rem; font-weight: 600; padding: 0.4rem 0.8rem; border-radius: 50px; text-transform: uppercase; }
+
+        /* Utilidad para scroll en las tarjetas del modal */
+        .modal-card-scroll::-webkit-scrollbar { width: 5px; }
+        .modal-card-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -58,7 +56,7 @@
 
             <div class="table-container shadow-sm">
                 <div class="p-3 border-bottom d-flex gap-2 bg-light">
-                    <input type="text" class="form-control w-25" placeholder="Buscar por ticket o DNI...">
+                    <input type="text" id="inputBuscador" class="form-control w-25" placeholder="Buscar por ticket o DNI...">
                     <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
                 </div>
 
@@ -106,46 +104,134 @@
     </div>
 </div>
 
-<div th:each="cita : ${tramites}" class="modal fade" th:id="'modalReview' + ${cita.id}" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div th:each="cita : ${tramites}" class="modal fade modal-expediente" th:id="'modalReview' + ${cita.id}" th:data-app-id="${cita.id}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
             <div class="modal-header border-bottom-0 bg-light px-4 py-3">
-                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-file-earmark-text text-primary me-2"></i>Análisis de Expediente: <span th:text="${cita.ticketNumber}"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-text text-primary"></i>
+                    Análisis de Expediente: <span class="text-primary" th:text="${cita.ticketNumber}"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
             <div class="modal-body p-4">
                 <div class="row g-4">
-                    <div class="col-md-6 border-end pe-md-4">
-                        <h6 class="fw-bold mb-3 text-secondary">
-                            <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>Información Completa del Formulario:
-                        </h6>
-                        <div class="p-3 bg-light rounded-3 border" style="max-height: 380px; overflow-y: auto;">
-                            <pre th:text="${cita.clientNotes != null && !#strings.isEmpty(cita.clientNotes) ? cita.clientNotes : 'El cliente no especificó descripciones adicionales.'}"
-                                 style="font-family: 'Inter', sans-serif; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 0; color: #334155; line-height: 1.5;"></pre>
+
+                    <div class="col-lg-7 border-end pe-lg-4">
+                        <div class="modal-card-scroll pe-2" style="max-height: 520px; overflow-y: auto;">
+
+                            <div th:id="'rawNotesData-' + ${cita.id}" style="display:none;" th:text="${cita.clientNotes}"></div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-3" style="background-color: #f8fafc; border-left: 4px solid #0d6efd !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-2">
+                                            <i class="bi bi-chat-left-text-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Requerimiento Principal</h6>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border mt-2">
+                                        <small class="text-muted d-block mb-1 fw-semibold">Descripción / Notas del Cliente:</small>
+                                        <p class="text-dark mb-0 fw-medium evaluation-req-desc" style="font-size: 0.95rem;">Cargando...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-3" style="background-color: #f8fafc; border-left: 4px solid #198754 !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success bg-opacity-10 text-success rounded p-2 me-2">
+                                            <i class="bi bi-person-badge-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Datos del Representado (Otorga en el Poder)</h6>
+                                    </div>
+
+                                    <div class="row g-3 bg-white p-3 rounded border mx-0">
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">DNI / Identificación</small>
+                                            <strong class="text-dark evaluation-rep-dni">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Nombres Completos</small>
+                                            <strong class="text-dark evaluation-rep-nombres">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Fecha de Nacimiento</small>
+                                            <span class="text-dark fw-semibold evaluation-rep-fechanac">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6 border-bottom pb-2">
+                                            <small class="text-muted d-block">Estado Civil</small>
+                                            <span class="badge bg-light text-dark border px-2.5 py-1 mt-1 evaluation-rep-civil">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Nacionalidad</small>
+                                            <span class="text-dark fw-semibold evaluation-rep-nacionalidad">Cargando...</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Contacto y Ubicación</small>
+                                            <span class="text-dark d-block small evaluation-rep-tlf"><i class="bi bi-telephone text-muted me-1"></i> -</span>
+                                            <span class="text-dark d-block small evaluation-rep-mail"><i class="bi bi-envelope text-muted me-1"></i> -</span>
+                                            <span class="text-dark d-block small evaluation-rep-dir"><i class="bi bi-geo-alt text-muted me-1"></i> -</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-3 mb-1" style="background-color: #f8fafc; border-left: 4px solid #6f42c1 !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-purple bg-opacity-10 text-purple rounded p-2 me-2" style="color: #6f42c1; background-color: rgba(111, 66, 193, 0.1);">
+                                            <i class="bi bi-person-check-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Datos del Apoderado (Recibe el Poder)</h6>
+                                    </div>
+
+                                    <div class="row g-3 bg-white p-3 rounded border mx-0 mb-3">
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">DNI del Apoderado</small>
+                                            <strong class="text-dark evaluation-apo-dni">Cargando...</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <small class="text-muted d-block">Nombres Completos</small>
+                                            <strong class="text-dark evaluation-apo-nombres">Cargando...</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded border">
+                                        <small class="text-primary d-block mb-1 fw-bold"><i class="bi bi-shield-shaded me-1"></i> Facultades Especiales Otorgadas:</small>
+                                        <p class="text-dark fw-medium mb-0 small evaluation-apo-facultades" style="white-space: pre-wrap; line-height: 1.4;">
+                                            Cargando facultades...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
-                    <div class="col-md-6 ps-md-4">
-                        <h6 class="fw-bold mb-3 text-secondary"><i class="bi bi-shield-check me-2"></i>Dictamen Técnico Legal</h6>
-                        <p class="text-muted small">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
+                    <div class="col-lg-5 ps-lg-4">
+                        <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-shield-check text-success me-1"></i>Dictamen Técnico Legal</h6>
+                        <p class="text-muted small mb-4">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
 
-                        <form th:action="@{/abogado/tramite/evaluar/{id}(id=${cita.id})}" method="post">
-                            <div class="mb-3">
+                        <form th:action="@{/abogado/tramite/evaluar/{id}(id=${cita.id})}" method="post" th:id="'formEvaluar-' + ${cita.id}">
+                            <div class="mb-4">
                                 <label class="small fw-bold text-muted text-uppercase mb-1">Comentario u Observación Evaluativa</label>
-                                <textarea class="form-control rounded-3" id="comentarioEvaluacion" name="comentario" rows="3" placeholder="Obligatorio únicamente si decide Detener el Proceso..."></textarea>
+                                <textarea class="form-control rounded-3" th:id="'txtComentario-' + ${cita.id}" name="comentario" rows="5" style="font-size: 0.9rem;" placeholder="Obligatorio únicamente si decide Detener el Proceso..."></textarea>
                             </div>
 
-                            <div class="d-grid gap-2 mt-4">
-                                <button type="submit" name="accion" value="continuar" class="btn btn-success rounded-pill py-2 fw-bold shadow-sm">
-                                    <i class="bi bi-check-circle me-1"></i> Continuar Proceso
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="accion" value="continuar" class="btn btn-success py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                    <i class="bi bi-check-circle-fill"></i> Continuar Proceso
                                 </button>
 
-                                <button type="submit" name="accion" value="detener" class="btn btn-outline-danger rounded-pill py-2 fw-bold">
-                                    <i class="bi bi-x-circle me-1"></i> Detener Proceso
+                                <button type="button" th:onclick="'validarYDetenerBandeja(' + ${cita.id} + ')'" class="btn btn-outline-danger py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-x-circle-fill"></i> Detener Proceso
                                 </button>
                             </div>
                         </form>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -153,5 +239,124 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modales = document.querySelectorAll(".modal-expediente");
+
+        modales.forEach(modal => {
+            const appId = modal.getAttribute("data-app-id");
+            const rawContainer = document.getElementById(`rawNotesData-${appId}`);
+            if (!rawContainer) return;
+
+            const rawText = rawContainer.innerText;
+
+            const partsReq = rawText.split(/\[REQUERIMIENTO PRINCIPAL\]/i);
+            const partsRep = rawText.split(/\[DATOS DEL REPRESENTADO[^\]]*\]/i);
+            const partsApo = rawText.split(/\[DATOS DEL APODERADO[^\]]*\]/i);
+
+            let bloqueRequerimiento = "";
+            let bloqueRepresentado = "";
+            let bloqueApoderado = "";
+
+            if (partsReq.length > 1) bloqueRequerimiento = partsReq[1].split("[")[0];
+            if (partsRep.length > 1) bloqueRepresentado = partsRep[1].split("[")[0];
+            if (partsApo.length > 1) bloqueApoderado = partsApo[1];
+
+            function extraerValor(textoBloque, claveBusqueda) {
+                if (!textoBloque) return "No registrado";
+                const lineas = textoBloque.split("\n");
+                for (let linea of lineas) {
+                    if (linea.toLowerCase().includes(claveBusqueda.toLowerCase())) {
+                        const partes = linea.split(":");
+                        if (partes.length > 1) return partes.slice(1).join(":").trim();
+                    }
+                }
+                return "No registrado";
+            }
+
+            // Inyectar datos del Requerimiento
+            const descReq = extraerValor(bloqueRequerimiento, "Descripción");
+            modal.querySelector(".evaluation-req-desc").innerText = descReq !== "No registrado" ? descReq : "PRUEBA";
+
+            // Inyectar datos del Representado
+            modal.querySelector(".evaluation-rep-dni").innerText = extraerValor(bloqueRepresentado, "DNI");
+            modal.querySelector(".evaluation-rep-nombres").innerText = extraerValor(bloqueRepresentado, "Nombres Completos");
+            modal.querySelector(".evaluation-rep-fechanac").innerText = extraerValor(bloqueRepresentado, "Fecha de Nacimiento");
+            modal.querySelector(".evaluation-rep-civil").innerText = extraerValor(bloqueRepresentado, "Estado Civil");
+            modal.querySelector(".evaluation-rep-nacionalidad").innerText = extraerValor(bloqueRepresentado, "Nacionalidad");
+
+            const tlf = extraerValor(bloqueRepresentado, "Teléfono");
+            const mail = extraerValor(bloqueRepresentado, "Correo");
+            const dir = extraerValor(bloqueRepresentado, "Dirección");
+
+            modal.querySelector(".evaluation-rep-tlf").innerHTML = `<i class="bi bi-telephone text-muted me-1"></i> ${tlf}`;
+            modal.querySelector(".evaluation-rep-mail").innerHTML = `<i class="bi bi-envelope text-muted me-1"></i> ${mail}`;
+            modal.querySelector(".evaluation-rep-dir").innerHTML = `<i class="bi bi-geo-alt text-muted me-1"></i> ${dir}`;
+
+            // Inyectar datos fijos del Apoderado
+            modal.querySelector(".evaluation-apo-dni").innerText = extraerValor(bloqueApoderado, "DNI");
+            modal.querySelector(".evaluation-apo-nombres").innerText = extraerValor(bloqueApoderado, "Nombres Completos");
+
+            // --- PROCESAMIENTO MÁXIMO DE FACULTADES (REESCRITO ULTRA FUERTE) ---
+            const lineasApo = bloqueApoderado.split("\n");
+            let capturarFacultades = [];
+            let pasoCamposFijos = false;
+
+            for (let linea of lineasApo) {
+                let lLimpia = linea.trim();
+
+                if (!lLimpia || lLimpia.startsWith("===")) continue;
+
+                // Forzar activación tras leer campos base
+                if (lLimpia.toLowerCase().includes("dni:") || lLimpia.toLowerCase().includes("nombres completos:")) {
+                    pasoCamposFijos = true;
+                    continue;
+                }
+
+                if (pasoCamposFijos) {
+                    // REGEX INFALIBLE: Detecta si la línea contiene etiquetas de contacto o leyendas de campos vacíos
+                    if (/correo|teléfono|celular|dirección|residencia/i.test(lLimpia) && /no declarado|no registrado|no registrada/i.test(lLimpia)) {
+                        continue; // Elimina los campos de contacto vacíos de raíz
+                    }
+
+                    // Capturar las facultades reales
+                    if (lLimpia.toLowerCase().includes("facultades:")) {
+                        const partes = lLimpia.split(":");
+                        if (partes.length > 1 && partes[1].trim()) {
+                            capturarFacultades.push(partes.slice(1).join(":").trim());
+                        }
+                    } else {
+                        // Limpiar viñetas nativas para estética visual
+                        capturarFacultades.push(lLimpia.replace(/^·\s*|^•\s*|^\-\s*/, ""));
+                    }
+                }
+            }
+
+            const textoFinalFacultades = capturarFacultades.join("\n").trim();
+
+            // Renderizar las facultades del trámite o la contingencia legal por defecto
+            modal.querySelector(".evaluation-apo-facultades").innerText = textoFinalFacultades ? textoFinalFacultades : "Facultad General de Representación sobre actos notariales y administrativos de forma Conforme.";
+        });
+    });
+
+    function validarYDetenerBandeja(id) {
+        const txtComentario = document.getElementById(`txtComentario-${id}`);
+
+        if (!txtComentario || !txtComentario.value.trim()) {
+            alert("Para poder detener el proceso, es obligatorio que redacte un comentario u observación evaluativa indicando los motivos.");
+            if(txtComentario) txtComentario.focus();
+            return;
+        }
+
+        const formPadre = document.getElementById(`formEvaluar-${id}`);
+        const hiddenAccion = document.createElement('input');
+        hiddenAccion.type = 'hidden';
+        hiddenAccion.name = 'accion';
+        hiddenAccion.value = 'detener';
+
+        formPadre.appendChild(hiddenAccion);
+        formPadre.submit();
+    }
+</script>
 </body>
 </html>

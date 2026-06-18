@@ -103,7 +103,6 @@ public class AppointmentService {
             sb.append("· Razón Social / Empresa: ").append(dto.getBusinessName() != null ? dto.getBusinessName() : "N/A").append("\n\n");
         }
 
-        // Datos del Representado (Otorga) si es que se registraron en el modal
         if (dto.getRepDni() != null && !dto.getRepDni().trim().isEmpty()) {
             sb.append("[DATOS DEL REPRESENTADO (OTORGA EN EL PODER)]\n");
             sb.append("· DNI: ").append(dto.getRepDni()).append("\n");
@@ -116,7 +115,6 @@ public class AppointmentService {
             sb.append("· Dirección Completa: ").append(dto.getRepDireccion() != null ? dto.getRepDireccion() : "No registrada").append("\n\n");
         }
 
-        // Datos del Apoderado (Recibe) si es que se registraron en el modal
         if (dto.getApoDni() != null && !dto.getApoDni().trim().isEmpty()) {
             sb.append("[DATOS DEL APODERADO (RECIBE EL PODER)]\n");
             sb.append("· DNI: ").append(dto.getApoDni()).append("\n");
@@ -124,10 +122,11 @@ public class AppointmentService {
             sb.append("· Correo Electrónico: ").append(dto.getApoCorreo() != null ? dto.getApoCorreo() : "No declarado").append("\n");
             sb.append("· Teléfono / Celular: ").append(dto.getApoTelefono() != null ? dto.getApoTelefono() : "No registrado").append("\n");
             sb.append("· Dirección de Residencia: ").append(dto.getApoDireccion() != null ? dto.getApoDireccion() : "No registrada").append("\n");
+            sb.append("· Facultades: ").append(dto.getApoFacultades() != null ? dto.getApoFacultades() : "No se especificaron facultades").append("\n");
+
             sb.append("========================================================\n");
         }
 
-        // Guardamos todo el bloque de texto formateado dentro de clientNotes
         app.setClientNotes(sb.toString());
 
         Appointment saved = appointmentRepo.save(app);
