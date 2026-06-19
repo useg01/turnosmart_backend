@@ -63,6 +63,21 @@
 
                             <div id="rawNotesData" style="display:none;" th:text="${expediente.clientNotes}"></div>
 
+                            <div th:if="${expediente.clientObservation != null and expediente.clientObservation != ''}"
+                                 class="card border-0 shadow-sm rounded-3 mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="bg-warning bg-opacity-25 text-warning-emphasis rounded p-2 me-2">
+                                            <i class="bi bi-reply-fill lh-1 d-block"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-0 text-uppercase small tracking-wide">Subsanación Enviada por el Cliente</h6>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border mt-2">
+                                        <p class="text-dark mb-0 fw-medium" style="font-size: 0.95rem; white-space: pre-wrap;" th:text="${expediente.clientObservation}">Respuesta del cliente...</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="card border-0 shadow-sm rounded-3 mb-4" style="background-color: #f8fafc; border-left: 4px solid #0d6efd !important;">
                                 <div class="card-body p-3">
                                     <div class="d-flex align-items-center mb-2">

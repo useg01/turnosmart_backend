@@ -155,10 +155,11 @@ public class AppointmentService {
 
     /**
      * El cliente envía su respuesta/observación a un trámite que el especialista
-     * marcó como REGULARIZAR. El trámite pasa a REVISION para que el especialista
-     * vuelva a evaluarlo, y la respuesta del cliente queda registrada en el log
-     * y en las notas del cliente (clientNotes) para no perder la observación
-     * anterior del abogado (lawyerNotes) hasta que este la actualice de nuevo.
+     * marcó como REGULARIZAR o PROCESO_DETENIDO. El trámite pasa a REVISION para
+     * que el especialista vuelva a evaluarlo. La respuesta se guarda en el campo
+     * dedicado clientObservation (separado de clientNotes) para que NO se mezcle
+     * con el expediente original ni con el parser de "Facultades Especiales"
+     * que usan las vistas del abogado.
      */
     @Transactional
     public void subsanarTramite(Long appId, String clientObservation, Long clientUserId) {
@@ -172,12 +173,7 @@ public class AppointmentService {
 
         String estadoAnterior = app.getStatus().name();
 
-        String notasPrevias = app.getClientNotes() != null ? app.getClientNotes() : "";
-        String nuevaNota = notasPrevias
-                + "\n\n[SUBSANACIÓN DEL CLIENTE - " + LocalDateTime.now() + "]\n"
-                + clientObservation;
-        app.setClientNotes(nuevaNota);
-
+        app.setClientObservation(clientObservation);
         app.setStatus(AppointmentStatus.REVISION);
 
         appointmentRepo.save(app);
