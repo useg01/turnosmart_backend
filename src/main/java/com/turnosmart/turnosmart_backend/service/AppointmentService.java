@@ -153,6 +153,39 @@ public class AppointmentService {
         registrarLog(app, estadoAnterior, nuevoEstado.name(), comentario, actorId);
     }
 
+    /**
+     * El cliente envía su respuesta/observación a un trámite que el especialista
+     * marcó como REGULARIZAR. El trámite pasa a REVISION para que el especialista
+     * vuelva a evaluarlo, y la respuesta del cliente queda registrada en el log
+     * y en las notas del cliente (clientNotes) para no perder la observación
+     * anterior del abogado (lawyerNotes) hasta que este la actualice de nuevo.
+     */
+    @Transactional
+    public void subsanarTramite(Long appId, String clientObservation, Long clientUserId) {
+        Appointment app = appointmentRepo.findById(appId)
+                .orElseThrow(() -> new BusinessException("El trámite no existe."));
+
+        if (app.getStatus() != AppointmentStatus.REGULARIZAR
+                && app.getStatus() != AppointmentStatus.PROCESO_DETENIDO) {
+            throw new BusinessException("Solo se puede subsanar un trámite que se encuentre en estado 'Por Regularizar'.");
+        }
+
+        String estadoAnterior = app.getStatus().name();
+
+        String notasPrevias = app.getClientNotes() != null ? app.getClientNotes() : "";
+        String nuevaNota = notasPrevias
+                + "\n\n[SUBSANACIÓN DEL CLIENTE - " + LocalDateTime.now() + "]\n"
+                + clientObservation;
+        app.setClientNotes(nuevaNota);
+
+        app.setStatus(AppointmentStatus.REVISION);
+
+        appointmentRepo.save(app);
+
+        registrarLog(app, estadoAnterior, AppointmentStatus.REVISION.name(),
+                "Cliente envió subsanación: " + clientObservation, clientUserId);
+    }
+
     public List<Appointment> findByClient(Long clientId) {
         return appointmentRepo.findByClientId(clientId);
     }

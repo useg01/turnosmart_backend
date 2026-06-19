@@ -88,8 +88,25 @@ public class AppointmentController {
                                @RequestParam("paymentMethod") String paymentMethod,
                                @RequestParam("operationNumber") String operationNumber,
                                RedirectAttributes redirectAttributes) {
-        
+
         redirectAttributes.addFlashAttribute("successMessage", "Pago registrado con éxito. El especialista validará el número de operación.");
+        return "redirect:/cliente/dashboard";
+    }
+
+    @PostMapping("/api/tramites/subsanar/{id}")
+    public String procesarSubsanacion(@PathVariable Long id,
+                                      @RequestParam("clientObservation") String clientObservation,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
+
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null) return "redirect:/login";
+
+        appointmentService.subsanarTramite(id, clientObservation, loggedUser.getId());
+
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Tu respuesta fue enviada con éxito. El especialista revisará la subsanación.");
+
         return "redirect:/cliente/dashboard";
     }
 
