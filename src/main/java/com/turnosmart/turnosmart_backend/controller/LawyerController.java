@@ -31,6 +31,8 @@ public class LawyerController {
 
     @GetMapping("/tramite/evaluar/{id}")
     public String verEvaluacionExpediente(@PathVariable Long id, Model model, HttpSession session) {
+
+        //A01:2025 - Control de acceso defectuoso
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/login";
 

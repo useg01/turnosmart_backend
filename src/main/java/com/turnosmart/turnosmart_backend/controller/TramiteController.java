@@ -68,6 +68,7 @@ public class TramiteController {
     public String clienteDashboard(HttpSession session, Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
 
+        //A05:2025 - Inyección
         List<Appointment> misTramites = appointmentRepository.findByClientId(loggedUser.getId());
 
         model.addAttribute("usuario", loggedUser);
