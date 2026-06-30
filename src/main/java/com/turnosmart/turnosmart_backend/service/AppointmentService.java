@@ -26,7 +26,11 @@ public class AppointmentService {
     private final UserRepository userRepo;
     private final ProcedureTypeRepository procedureTypeRepo;
     private final AppointmentLogRepository logRepo;
+    private final AppointmentDocumentRepository documentRepo;
+    private final FileService fileService;
 
+    // Lista fija (temporal) de códigos de operación válidos para Yape/Transferencia.
+    // TODO: mover a tabla en BD si se necesita gestionar desde un panel administrativo.
     private static final java.util.Set<String> CODIGOS_OPERACION_VALIDOS = java.util.Set.of(
             "012345", "054823", "112233", "998877", "445566"
     );
@@ -64,6 +68,7 @@ public class AppointmentService {
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
 
+        // Validación del pago: el código de operación debe estar en la lista permitida.
         String codigoIngresado = dto.getOperationNumber() != null ? dto.getOperationNumber().trim() : "";
         if (codigoIngresado.isEmpty() || !CODIGOS_OPERACION_VALIDOS.contains(codigoIngresado)) {
             throw new BusinessException("El número de operación ingresado no es válido. Verifique el código de su comprobante de pago e intente nuevamente.");
@@ -88,15 +93,20 @@ public class AppointmentService {
         app.setProcedureType(procedure);
         app.setClientDni(client.getDni());
 
+        // Mapeo de campos de cabecera de representación
         app.setRepresentationType(dto.getRepresentationType());
         app.setIdentifier(dto.getIdentifier());
         app.setBusinessName(dto.getBusinessName());
         app.setStatus(AppointmentStatus.PENDIENTE_EVALUACION);
 
+        // Datos de pago, ya validados arriba
         app.setPaymentMethod(dto.getPaymentMethod());
         app.setOperationNumber(codigoIngresado);
         app.setIsPaid(true);
 
+        // =========================================================================
+        // CONSTRUCCIÓN DE LA HOJA INFORMATIVA COMPLETA (TEXTO PLANO)
+        // =========================================================================
         StringBuilder sb = new StringBuilder();
         sb.append("========================================================\n");
         sb.append("           EXPEDIENTE DETALLADO DE SOLICITUD            \n");
@@ -105,6 +115,7 @@ public class AppointmentService {
         sb.append("[REQUERIMIENTO PRINCIPAL]\n");
         sb.append("· Descripción/Notas del Cliente: ").append(dto.getNotes() != null ? dto.getNotes() : "No especificado").append("\n\n");
 
+        // Si se llenó el módulo de representación legal (Persona Jurídica o Natural)
         if (dto.getRepresentationType() != null && !dto.getRepresentationType().trim().isEmpty()) {
             sb.append("[MÓDULO DE REPRESENTACIÓN LEGAL]\n");
             sb.append("· Tipo de Persona: ").append(dto.getRepresentationType()).append("\n");
@@ -162,6 +173,14 @@ public class AppointmentService {
         registrarLog(app, estadoAnterior, nuevoEstado.name(), comentario, actorId);
     }
 
+    /**
+     * El cliente envía su respuesta/observación a un trámite que el especialista
+     * marcó como REGULARIZAR o PROCESO_DETENIDO. El trámite pasa a REVISION para
+     * que el especialista vuelva a evaluarlo. La respuesta se guarda en el campo
+     * dedicado clientObservation (separado de clientNotes) para que NO se mezcle
+     * con el expediente original ni con el parser de "Facultades Especiales"
+     * que usan las vistas del abogado.
+     */
     @Transactional
     public void subsanarTramite(Long appId, String clientObservation, Long clientUserId) {
         Appointment app = appointmentRepo.findById(appId)
@@ -196,12 +215,40 @@ public class AppointmentService {
                 .orElseThrow(() -> new BusinessException("No se encontró el trámite con ticket: " + ticket));
     }
 
+    /**
+     * Sube los documentos obligatorios del cliente (DNI y Recibo de Agua/Luz)
+     * para un trámite. Cada archivo se guarda físicamente vía FileService y se
+     * registra como un AppointmentDocument con su tipo (DNI / RECIBO_SERVICIO),
+     * de modo que el abogado pueda identificar cuál es cuál al revisarlos.
+     * Permite reemplazar/agregar documentos en envíos posteriores.
+     */
     @Transactional
-    public void uploadDocuments(Long appointmentId, List<MultipartFile> files, Long userId) {
+    public void uploadDocuments(Long appointmentId, MultipartFile fileDni, MultipartFile fileRecibo, Long userId) {
         Appointment app = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new BusinessException("Cita no encontrada para subir archivos."));
 
-        registrarLog(app, app.getStatus().name(), app.getStatus().name(), "Se cargaron nuevos documentos adjuntos.", userId);
+        if (fileDni == null || fileDni.isEmpty() || fileRecibo == null || fileRecibo.isEmpty()) {
+            throw new BusinessException("Debe adjuntar tanto el DNI como el Recibo de Agua o Luz en formato PDF.");
+        }
+
+        String nombreDni = fileService.save(fileDni, app.getTicketNumber() + "_DNI");
+        AppointmentDocument docDni = new AppointmentDocument();
+        docDni.setAppointment(app);
+        docDni.setFileName(nombreDni);
+        docDni.setFileType("DNI");
+        docDni.setFileUrl("/uploads/tramites/" + nombreDni);
+        documentRepo.save(docDni);
+
+        String nombreRecibo = fileService.save(fileRecibo, app.getTicketNumber() + "_RECIBO");
+        AppointmentDocument docRecibo = new AppointmentDocument();
+        docRecibo.setAppointment(app);
+        docRecibo.setFileName(nombreRecibo);
+        docRecibo.setFileType("RECIBO_SERVICIO");
+        docRecibo.setFileUrl("/uploads/tramites/" + nombreRecibo);
+        documentRepo.save(docRecibo);
+
+        registrarLog(app, app.getStatus().name(), app.getStatus().name(),
+                "El cliente cargó/actualizó sus documentos: DNI y Recibo de Agua/Luz.", userId);
     }
 
     private void registrarLog(Appointment app, String oldS, String newS, String comment, Long userId) {
