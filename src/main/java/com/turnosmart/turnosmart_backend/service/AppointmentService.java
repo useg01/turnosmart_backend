@@ -27,6 +27,10 @@ public class AppointmentService {
     private final ProcedureTypeRepository procedureTypeRepo;
     private final AppointmentLogRepository logRepo;
 
+    private static final java.util.Set<String> CODIGOS_OPERACION_VALIDOS = java.util.Set.of(
+            "012345", "054823", "112233", "998877", "445566"
+    );
+
     public long count() {
         return appointmentRepo.count();
     }
@@ -59,6 +63,12 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
+
+        String codigoIngresado = dto.getOperationNumber() != null ? dto.getOperationNumber().trim() : "";
+        if (codigoIngresado.isEmpty() || !CODIGOS_OPERACION_VALIDOS.contains(codigoIngresado)) {
+            throw new BusinessException("El número de operación ingresado no es válido. Verifique el código de su comprobante de pago e intente nuevamente.");
+        }
+
         List<Lawyer> availableLawyers = lawyerRepo.findLawyersOrderByLoad();
         if (availableLawyers.isEmpty()) {
             throw new BusinessException("No existen abogados activos registrados en el sistema para la asignación.");
@@ -78,15 +88,15 @@ public class AppointmentService {
         app.setProcedureType(procedure);
         app.setClientDni(client.getDni());
 
-        // Mapeo de campos de cabecera de representación
         app.setRepresentationType(dto.getRepresentationType());
         app.setIdentifier(dto.getIdentifier());
         app.setBusinessName(dto.getBusinessName());
         app.setStatus(AppointmentStatus.PENDIENTE_EVALUACION);
 
-        // =========================================================================
-        // CONSTRUCCIÓN DE LA HOJA INFORMATIVA COMPLETA (TEXTO PLANO)
-        // =========================================================================
+        app.setPaymentMethod(dto.getPaymentMethod());
+        app.setOperationNumber(codigoIngresado);
+        app.setIsPaid(true);
+
         StringBuilder sb = new StringBuilder();
         sb.append("========================================================\n");
         sb.append("           EXPEDIENTE DETALLADO DE SOLICITUD            \n");
@@ -95,7 +105,6 @@ public class AppointmentService {
         sb.append("[REQUERIMIENTO PRINCIPAL]\n");
         sb.append("· Descripción/Notas del Cliente: ").append(dto.getNotes() != null ? dto.getNotes() : "No especificado").append("\n\n");
 
-        // Si se llenó el módulo de representación legal (Persona Jurídica o Natural)
         if (dto.getRepresentationType() != null && !dto.getRepresentationType().trim().isEmpty()) {
             sb.append("[MÓDULO DE REPRESENTACIÓN LEGAL]\n");
             sb.append("· Tipo de Persona: ").append(dto.getRepresentationType()).append("\n");
@@ -153,14 +162,6 @@ public class AppointmentService {
         registrarLog(app, estadoAnterior, nuevoEstado.name(), comentario, actorId);
     }
 
-    /**
-     * El cliente envía su respuesta/observación a un trámite que el especialista
-     * marcó como REGULARIZAR o PROCESO_DETENIDO. El trámite pasa a REVISION para
-     * que el especialista vuelva a evaluarlo. La respuesta se guarda en el campo
-     * dedicado clientObservation (separado de clientNotes) para que NO se mezcle
-     * con el expediente original ni con el parser de "Facultades Especiales"
-     * que usan las vistas del abogado.
-     */
     @Transactional
     public void subsanarTramite(Long appId, String clientObservation, Long clientUserId) {
         Appointment app = appointmentRepo.findById(appId)

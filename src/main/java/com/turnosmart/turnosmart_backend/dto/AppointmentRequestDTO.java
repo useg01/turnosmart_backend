@@ -62,6 +62,9 @@ public class AppointmentRequestDTO {
     private Long lawyerId;
 
     private String notes;
+    @NotBlank(message = "Seleccione un método de pago")
+    private String paymentMethod;
 
-    // ❌ El método manual vacío que estaba aquí fue eliminado.
+    @NotBlank(message = "Debe ingresar el número de operación del pago")
+    private String operationNumber;
 }
