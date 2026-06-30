@@ -31,8 +31,6 @@ public class LawyerController {
 
     @GetMapping("/tramite/evaluar/{id}")
     public String verEvaluacionExpediente(@PathVariable Long id, Model model, HttpSession session) {
-
-        //A01:2025 - Control de acceso defectuoso
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/login";
 
@@ -79,6 +77,42 @@ public class LawyerController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/abogado/tramite/evaluar/" + id;
         }
+    }
+
+    @PostMapping("/tramite/documentos/{id}")
+    public String evaluarDocumentos(@PathVariable Long id,
+                                    @RequestParam("accion") String accion,
+                                    @RequestParam(value = "comentario", required = false) String comentario,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null) return "redirect:/login";
+
+        try {
+            AppointmentStatus nuevoEstado;
+            String mensajeFeed;
+
+            if ("aprobar".equals(accion)) {
+                nuevoEstado = AppointmentStatus.ENTREGADO;
+                mensajeFeed = "Documentos aprobados. El trámite ha sido marcado como completado.";
+            } else if ("rechazar".equals(accion)) {
+                if (comentario == null || comentario.trim().isEmpty()) {
+                    throw new BusinessException("Debe ingresar un comentario indicando por qué se rechazan los documentos.");
+                }
+                nuevoEstado = AppointmentStatus.REGULARIZAR;
+                mensajeFeed = "Documentos rechazados. Se notificó al cliente para que los corrija.";
+            } else {
+                throw new BusinessException("Acción no reconocida.");
+            }
+
+            appointmentService.changeStatus(id, nuevoEstado, comentario, loggedUser.getId());
+            redirectAttributes.addFlashAttribute("success", mensajeFeed);
+
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/abogado/bandeja?lawyerId=" + loggedUser.getId();
     }
 
     @PostMapping("/tramite/cambiar-estado")

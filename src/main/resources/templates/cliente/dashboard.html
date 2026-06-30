@@ -87,6 +87,7 @@
         .status-revision { border-left-color: #f59e0b; }
         .status-conforme { border-left-color: #10b981; }
         .status-regularizar { border-left-color: #ef4444; }
+        .status-documentos-enviados { border-left-color: #0ea5e9; }
         .status-pendiente-evaluacion { border-left-color: #f59e0b; }
         .status-proceso-detenido { border-left-color: #ef4444; }
 
@@ -222,11 +223,9 @@
 
         <div class="col-12" th:each="t : ${misTramites}">
             <div class="card tramite-card p-4 mb-3"
-                 th:classappend="${t.status.name() == 'SOLICITADO' ? 'status-solicitado' :
-                                  (t.status.name() == 'REVISION' ? 'status-revision' :
-                                  (t.status.name() == 'REGULARIZAR' ? 'status-regularizar' :
-                                  (t.status.name() == 'PENDIENTE_EVALUACION' ? 'status-pendiente-evaluacion' :
-                                  (t.status.name() == 'PROCESO_DETENIDO' ? 'status-proceso-detenido' : 'status-conforme'))))}">
+                 th:classappend="${t.status.name() == 'CONFORME' or t.status.name() == 'ENTREGADO' ? 'status-conforme' :
+                                  (t.status.name() == 'REGULARIZAR' or t.status.name() == 'PROCESO_DETENIDO' ? 'status-regularizar' :
+                                  (t.status.name() == 'DOCUMENTOS_ENVIADOS' ? 'status-documentos-enviados' : 'status-revision'))}">
 
                 <div class="row align-items-center">
                     <div class="col">
@@ -248,14 +247,8 @@
 
                             <div class="col-lg-5 text-lg-end mt-3 mt-lg-0 d-flex flex-wrap justify-content-lg-end gap-2 align-items-center">
                                 <span class="badge badge-pill-custom"
-                                      th:classappend="${t.status.name() == 'SOLICITADO' ? 'bg-primary-subtle text-primary-emphasis' :
-                       (t.status.name() == 'REVISION' ? 'bg-warning-subtle text-warning-emphasis' :
-                       (t.status.name() == 'REGULARIZAR' ? 'bg-danger-subtle text-danger-emphasis' :
-                       (t.status.name() == 'PENDIENTE_EVALUACION' ? 'bg-warning-subtle text-warning-emphasis' :
-                       (t.status.name() == 'PROCESO_DETENIDO' ? 'bg-danger-subtle text-danger-emphasis' : 'bg-success-subtle text-success-emphasis'))))}"
-                                      th:text="${t.status.name() == 'PENDIENTE_EVALUACION' ? 'EN REVISIÓN' :
-               (t.status.name() == 'CONFORME' ? 'APROBADO' :
-               (t.status.name() == 'PROCESO_DETENIDO' ? 'REGULARIZAR' : t.status.getLabel()))}">ESTADO</span>
+                                      th:classappend="${t.status.getColorClass()}"
+                                      th:text="${t.status.getLabel()}">ESTADO</span>
 
                                 <button th:if="${t.status.name() == 'REGULARIZAR' or t.status.name() == 'PROCESO_DETENIDO'}"
                                         type="button"

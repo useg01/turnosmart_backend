@@ -197,25 +197,51 @@
                     </div>
 
                     <div class="col-lg-5 ps-lg-4">
-                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-success me-1"></i> Dictamen Técnico Legal</h6>
-                        <p class="text-muted small mb-4">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
 
-                        <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Comentario u Observación Evaluativa</label>
-                                <textarea class="form-control rounded-3" name="comentario" id="txtComentarioModal" rows="5"
-                                          style="font-size: 0.9rem;" placeholder="Obligatorio únicamente si decide Detener el Proceso..."></textarea>
-                            </div>
+                        <div th:if="${expediente.status.name() != 'DOCUMENTOS_ENVIADOS'}">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-success me-1"></i> Dictamen Técnico Legal</h6>
+                            <p class="text-muted small mb-4">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
 
-                            <div class="d-grid gap-2">
-                                <button type="submit" name="accion" value="continuar" class="btn btn-success py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
-                                    <i class="bi bi-check-circle-fill"></i> Continuar Proceso
-                                </button>
-                                <button type="button" onclick="validarYDetener()" class="btn btn-outline-danger py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
-                                    <i class="bi bi-x-circle-fill"></i> Detener Proceso
-                                </button>
-                            </div>
-                        </form>
+                            <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Comentario u Observación Evaluativa</label>
+                                    <textarea class="form-control rounded-3" name="comentario" id="txtComentarioModal" rows="5"
+                                              style="font-size: 0.9rem;" placeholder="Obligatorio únicamente si decide Detener el Proceso..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" name="accion" value="continuar" class="btn btn-success py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                        <i class="bi bi-check-circle-fill"></i> Continuar Proceso
+                                    </button>
+                                    <button type="button" onclick="validarYDetener()" class="btn btn-outline-danger py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-x-circle-fill"></i> Detener Proceso
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div th:if="${expediente.status.name() == 'DOCUMENTOS_ENVIADOS'}">
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-file-earmark-check-fill text-info me-1"></i> Validación de Documentos</h6>
+                            <p class="text-muted small mb-4">Revise el DNI y el Recibo de Agua/Luz adjuntados a la izquierda. Apruebe para completar el trámite, o rechace indicando el motivo.</p>
+
+                            <form th:action="@{/abogado/tramite/documentos/{id}(id=${expediente.id})}" method="post" id="formDocsModal">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Comentario (obligatorio si rechaza)</label>
+                                    <textarea class="form-control rounded-3" name="comentario" id="txtComentarioDocsModal" rows="5"
+                                              style="font-size: 0.9rem;" placeholder="Obligatorio únicamente si decide Rechazar los documentos..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" name="accion" value="aprobar" class="btn btn-success py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                        <i class="bi bi-check-circle-fill"></i> Aprobar Documentos
+                                    </button>
+                                    <button type="button" onclick="validarYRechazarDocsModal()" class="btn btn-outline-danger py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-x-circle-fill"></i> Rechazar Documentos
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
                     </div>
 
                 </div>
@@ -229,7 +255,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         const rawText = document.getElementById("rawNotesData").innerText;
 
-        // 1. Fragmentar por bloques estructurales principales
         const partsReq = rawText.split(/\[REQUERIMIENTO PRINCIPAL\]/i);
         const partsRep = rawText.split(/\[DATOS DEL REPRESENTADO[^\]]*\]/i);
         const partsApo = rawText.split(/\[DATOS DEL APODERADO[^\]]*\]/i);
@@ -248,7 +273,6 @@
             bloqueApoderado = partsApo[1].split("===")[0];
         }
 
-        // 2. Extractor por coincidencia lineal
         function extraerValor(textoBloque, claveBusqueda) {
             if (!textoBloque) return "No registrado";
             const lineas = textoBloque.split("\n");
@@ -263,18 +287,15 @@
             return "No registrado";
         }
 
-        // 3. Inyectar datos en la tarjeta de Requerimiento
         const descReq = extraerValor(bloqueRequerimiento, "Descripción");
         document.getElementById("lblRequerimientoDescripcion").innerText = descReq !== "No registrado" ? descReq : "PRUEBA";
 
-        // 4. Inyectar datos en la tarjeta de Representado
         document.getElementById("lblRepDni").innerText = extraerValor(bloqueRepresentado, "DNI");
         document.getElementById("lblRepNombres").innerText = extraerValor(bloqueRepresentado, "Nombres Completos");
         document.getElementById("lblRepFechaNac").innerText = extraerValor(bloqueRepresentado, "Fecha de Nacimiento");
         document.getElementById("lblRepEstadoCivil").innerText = extraerValor(bloqueRepresentado, "Estado Civil");
         document.getElementById("lblRepNacionalidad").innerText = extraerValor(bloqueRepresentado, "Nacionalidad");
 
-        // Elementos compuestos de la sub-lista de contacto
         const telRep = extraerValor(bloqueRepresentado, "Teléfono");
         const mailRep = extraerValor(bloqueRepresentado, "Correo");
         const dirRep = extraerValor(bloqueRepresentado, "Dirección");
@@ -283,11 +304,9 @@
         document.getElementById("lblRepCorreo").innerHTML = `<i class="bi bi-envelope text-muted me-1"></i> ${mailRep}`;
         document.getElementById("lblRepDireccion").innerHTML = `<i class="bi bi-geo-alt text-muted me-1"></i> ${dirRep}`;
 
-        // 5. Inyectar datos en la tarjeta de Apoderado
         document.getElementById("lblApoDni").innerText = extraerValor(bloqueApoderado, "DNI");
         document.getElementById("lblApoNombres").innerText = extraerValor(bloqueApoderado, "Nombres Completos");
 
-        // --- CORRECCIÓN ESTRUCTURAL EN EXTRACCIÓN DE FACULTADES ---
         const lineasApo = bloqueApoderado.split("\n");
         let capturarFacultades = [];
         let pasoDatosBasicos = false;
@@ -296,7 +315,6 @@
             let lLimpia = linea.trim();
             if (!lLimpia) continue;
 
-            // Detectamos que ya pasamos la cabecera del apoderado
             if (lLimpia.toLowerCase().includes("dni:") || lLimpia.toLowerCase().includes("nombres completos:")) {
                 pasoDatosBasicos = true;
                 continue;
@@ -338,6 +356,25 @@
         hiddenAccion.type = 'hidden';
         hiddenAccion.name = 'accion';
         hiddenAccion.value = 'detener';
+
+        formPadre.appendChild(hiddenAccion);
+        formPadre.submit();
+    }
+
+    function validarYRechazarDocsModal() {
+        const txtComentario = document.getElementById('txtComentarioDocsModal');
+
+        if (!txtComentario.value.trim()) {
+            alert("Para rechazar los documentos, es obligatorio indicar el motivo en el comentario.");
+            txtComentario.focus();
+            return;
+        }
+
+        const formPadre = document.getElementById('formDocsModal');
+        const hiddenAccion = document.createElement('input');
+        hiddenAccion.type = 'hidden';
+        hiddenAccion.name = 'accion';
+        hiddenAccion.value = 'rechazar';
 
         formPadre.appendChild(hiddenAccion);
         formPadre.submit();
