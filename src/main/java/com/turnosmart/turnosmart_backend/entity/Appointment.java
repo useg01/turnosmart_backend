@@ -82,6 +82,13 @@ public class Appointment {
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentDocument> documents = new ArrayList<>();
 
+    /**
+     * Ruta del PDF de carta legal generado automáticamente al aprobar los documentos.
+     * Sirve tanto al cliente (para descargarlo) como al abogado/admin para consulta.
+     */
+    @Column(columnDefinition = "TEXT")
+    private String cartaGeneradaUrl;
+
     private String paymentMethod;
     private String operationNumber;
     private Boolean isPaid = false;

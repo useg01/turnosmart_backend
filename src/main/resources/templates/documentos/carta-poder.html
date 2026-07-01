@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page { margin: 2.5cm 2.8cm; }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            color: #000;
+            line-height: 1.6;
+        }
+        .header-doc {
+            text-align: center;
+            margin-bottom: 28pt;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12pt;
+        }
+        .header-doc h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0 0 4pt 0;
+        }
+        .header-doc p {
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+        }
+        .lugar-fecha {
+            text-align: right;
+            margin-bottom: 22pt;
+            font-style: italic;
+        }
+        .cuerpo p {
+            text-align: justify;
+            margin-bottom: 12pt;
+        }
+        .datos-parte {
+            margin: 14pt 0 14pt 24pt;
+        }
+        .datos-parte p {
+            margin: 4pt 0;
+        }
+        .firma-section {
+            margin-top: 60pt;
+            display: table;
+            width: 100%;
+        }
+        .firma-bloque {
+            display: table-cell;
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+        }
+        .firma-linea {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 0 auto 6pt auto;
+        }
+        .firma-bloque p {
+            font-size: 10pt;
+            margin: 2pt 0;
+        }
+        .ticket-ref {
+            font-size: 8pt;
+            color: #666;
+            text-align: right;
+            margin-top: 40pt;
+            border-top: 1px solid #ccc;
+            padding-top: 6pt;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-doc">
+    <h1>Carta Poder</h1>
+    <p>Documento Notarial de Gestión de Poderes</p>
+</div>
+
+<div class="lugar-fecha">
+    <span th:text="${lugarFecha}">San Isidro, 30 de junio de 2026</span>
+</div>
+
+<div class="cuerpo">
+    <p>
+        Yo, <strong th:text="${repNombre}">NOMBRE DEL OTORGANTE</strong>,
+        identificado(a) con DNI N° <strong th:text="${repDni}">00000000</strong>,
+        de estado civil <span th:text="${repEstadoCivil}">soltero(a)</span>,
+        de nacionalidad <span th:text="${repNacionalidad}">peruana</span>,
+        mediante la presente carta poder, otorgo de manera voluntaria y expresa poder
+        a favor de:
+    </p>
+
+    <div class="datos-parte">
+        <p><strong>Apoderado:</strong> <span th:text="${apoNombre}">NOMBRE DEL APODERADO</span></p>
+        <p><strong>DNI N°:</strong> <span th:text="${apoDni}">00000000</span></p>
+    </div>
+
+    <p>
+        Para que en mi nombre y representación, con todas las facultades que el presente
+        poder le confiere, realice la siguiente gestión:
+    </p>
+
+    <div class="datos-parte">
+        <p><strong>Gestión específica:</strong></p>
+        <p th:text="${gestion}">Descripción de la gestión específica a realizar.</p>
+    </div>
+
+    <p>
+        El presente poder es otorgado de manera especial y se limita exclusivamente a
+        las gestiones descritas anteriormente. El apoderado queda facultado para
+        suscribir documentos, presentar solicitudes, realizar trámites y en general
+        ejecutar todos los actos necesarios para el cumplimiento del encargo conferido.
+    </p>
+
+    <p>
+        El poderdante declara que los datos consignados son verídicos y que el presente
+        documento se extiende para los fines legales que correspondan.
+    </p>
+</div>
+
+<div class="firma-section">
+    <div class="firma-bloque">
+        <div class="firma-linea"></div>
+        <p><strong th:text="${repNombre}">OTORGANTE</strong></p>
+        <p>DNI N° <span th:text="${repDni}">00000000</span></p>
+        <p>Otorgante del Poder</p>
+    </div>
+    <div class="firma-bloque">
+        <div class="firma-linea"></div>
+        <p><strong th:text="${apoNombre}">APODERADO</strong></p>
+        <p>DNI N° <span th:text="${apoDni}">00000000</span></p>
+        <p>Apoderado</p>
+    </div>
+</div>
+
+<div class="ticket-ref">
+    Trámite N° <span th:text="${ticketNumber}">TS-XXXXXXXX</span> |
+    Generado por Turnosmart el <span th:text="${fechaGeneracion}">00/00/0000</span>
+</div>
+
+</body>
+</html>

@@ -24,6 +24,7 @@ public enum AppointmentStatus {
         };
     }
 
+    
     public String getColorClass() {
         return switch (this) {
             case SOLICITADO, PENDIENTE_EVALUACION, REVISION, REDACCION ->
