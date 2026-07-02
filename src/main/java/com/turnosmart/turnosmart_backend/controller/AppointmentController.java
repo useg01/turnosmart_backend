@@ -50,6 +50,8 @@ public class AppointmentController {
                                   RedirectAttributes redirectAttributes,
                                   Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
+
+        //A07:2025 - Fallos de autenticación
         if (loggedUser == null) return "redirect:/login";
 
         try {

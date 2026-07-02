@@ -4,6 +4,7 @@ import com.turnosmart.turnosmart_backend.entity.Appointment;
 import com.turnosmart.turnosmart_backend.entity.AppointmentStatus;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.service.AppointmentService;
+import com.turnosmart.turnosmart_backend.service.DocumentGeneratorService;
 import com.turnosmart.turnosmart_backend.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import java.util.List;
 public class LawyerController {
 
     private final AppointmentService appointmentService;
+    private final DocumentGeneratorService documentGeneratorService;
 
     @GetMapping("/bandeja")
     public String bandejaEntrada(@RequestParam Long lawyerId, Model model) {
@@ -77,6 +79,59 @@ public class LawyerController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/abogado/tramite/evaluar/" + id;
         }
+    }
+
+    /**
+     * El abogado revisa los documentos (DNI y Recibo) que el cliente subió
+     * mientras el trámite estaba en DOCUMENTOS_ENVIADOS, y decide:
+     * - Aprobar: el trámite pasa a ENTREGADO (Trámite Completado).
+     * - Rechazar: el trámite vuelve a REGULARIZAR para que el cliente
+     *   corrija o vuelva a subir los documentos correctos.
+     */
+    @PostMapping("/tramite/documentos/{id}")
+    public String evaluarDocumentos(@PathVariable Long id,
+                                    @RequestParam("accion") String accion,
+                                    @RequestParam(value = "comentario", required = false) String comentario,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null) return "redirect:/login";
+
+        try {
+            AppointmentStatus nuevoEstado;
+            String mensajeFeed;
+
+            if ("aprobar".equals(accion)) {
+                nuevoEstado = AppointmentStatus.ENTREGADO;
+
+                // Generar el documento legal (Carta de Poder / Rep. Legal)
+                Appointment appParaGenerar = appointmentService.findAll().stream()
+                        .filter(x -> x.getId().equals(id))
+                        .findFirst()
+                        .orElseThrow(() -> new BusinessException("Trámite no encontrado."));
+
+                String rutaCarta = documentGeneratorService.generarCarta(appParaGenerar);
+                appointmentService.guardarRutaCarta(id, rutaCarta, loggedUser.getId());
+
+                mensajeFeed = "Documentos aprobados. La carta legal fue generada exitosamente y el trámite ha sido completado.";
+            } else if ("rechazar".equals(accion)) {
+                if (comentario == null || comentario.trim().isEmpty()) {
+                    throw new BusinessException("Debe ingresar un comentario indicando por qué se rechazan los documentos.");
+                }
+                nuevoEstado = AppointmentStatus.REGULARIZAR;
+                mensajeFeed = "Documentos rechazados. Se notificó al cliente para que los corrija.";
+            } else {
+                throw new BusinessException("Acción no reconocida.");
+            }
+
+            appointmentService.changeStatus(id, nuevoEstado, comentario, loggedUser.getId());
+            redirectAttributes.addFlashAttribute("success", mensajeFeed);
+
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/abogado/bandeja?lawyerId=" + loggedUser.getId();
     }
 
     @PostMapping("/tramite/cambiar-estado")

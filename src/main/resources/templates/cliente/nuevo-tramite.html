@@ -90,6 +90,29 @@
             border-radius: 20px;
             border: none;
         }
+
+        .payment-selector input[type="radio"] {
+            display: none;
+        }
+        .payment-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 94px;
+        }
+        .payment-selector input[type="radio"]:checked + .payment-box {
+            border-color: #7c3aed;
+            background-color: #f3e8ff;
+        }
+        .payment-selector input[type="radio"]#payBank:checked + .payment-box {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
     </style>
 </head>
 <body>
@@ -100,6 +123,14 @@
             <a th:href="@{/cliente/dashboard}" class="btn btn-light rounded-pill px-4 fw-bold mb-4">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
+
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-4 shadow-sm p-4 mb-4 d-flex align-items-start gap-3">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">No se pudo generar la solicitud</h6>
+                    <p class="mb-0 small" th:text="${error}">Detalle del error.</p>
+                </div>
+            </div>
 
             <div class="card form-card shadow-sm">
                 <div class="header mb-5">
@@ -183,7 +214,47 @@
                         <input type="hidden" th:field="*{apoApellidos}" id="hApoApellidos">
                         <input type="hidden" th:field="*{apoFacultades}" id="hApoFacultades">
 
-                        <div class="col-12 mt-5">
+                        <!-- ============================ -->
+                        <!-- SECCIÓN DE PAGO (OBLIGATORIA) -->
+                        <!-- ============================ -->
+                        <div class="col-12 mt-3">
+                            <div class="p-4 rounded-4 border" style="background-color: #f0f9ff; border-color: #bae6fd !important;">
+                                <h6 class="fw-bold text-primary mb-1"><i class="bi bi-credit-card-2-back-fill me-2"></i>Pago del Trámite</h6>
+                                <p class="text-muted small mb-3">El pago es obligatorio para generar la solicitud. Realiza el pago y registra tu número de operación.</p>
+
+                                <label class="form-label mb-2">Método de Pago</label>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6 payment-selector">
+                                        <input type="radio" th:field="*{paymentMethod}" th:value="YAPE" id="payYape" checked onchange="updatePaymentInstructions(this)">
+                                        <label class="w-100" for="payYape">
+                                            <div class="payment-box text-center justify-content-center flex-column">
+                                                <img src="https://framerusercontent.com/images/hw6hziYr641GaAs7nc4LIlxVYcQ.png?width=1920&height=1080" alt="Yape" height="42" class="mb-1" style="object-fit: contain; max-width: 100%;">
+                                                <span class="fw-bold small text-dark">Yape</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="col-6 payment-selector">
+                                        <input type="radio" th:field="*{paymentMethod}" th:value="TRANSFERENCIA" id="payBank" onchange="updatePaymentInstructions(this)">
+                                        <label class="w-100" for="payBank">
+                                            <div class="payment-box text-center justify-content-center flex-column">
+                                                <i class="bi bi-bank text-primary fs-3 mb-1" style="line-height: 42px;"></i>
+                                                <span class="fw-bold small text-dark">Transferencia</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="paymentInstructions" class="alert alert-secondary border-0 rounded-4 p-3 mb-3 small">
+                                    <i class="bi bi-info-circle-fill me-2"></i> Yapea al siguiente número <strong>956 503 890</strong>.
+                                </div>
+
+                                <label class="form-label">Número de Operación</label>
+                                <input type="text" th:field="*{operationNumber}" class="form-control" placeholder="Ej. 054823" required autocomplete="off">
+                                <div class="form-text x-small">Introduce el código numérico que figura en tu comprobante de pago.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-4">
                             <button type="submit" id="btnSubmit" class="btn btn-primary w-100 shadow-sm">
                                 <i class="bi bi-file-earmark-plus me-2"></i> Generar Solicitud de Trámite
                             </button>
@@ -377,6 +448,15 @@
         }
     }
 
+    function updatePaymentInstructions(radio) {
+        const instructionsDiv = document.getElementById('paymentInstructions');
+        if (radio.value === 'YAPE') {
+            instructionsDiv.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Yapea al siguiente número <strong>956 503 890</strong>.';
+        } else if (radio.value === 'TRANSFERENCIA') {
+            instructionsDiv.innerHTML = '<i class="bi bi-info-circle-fill me-2"></i> Transfiere a la Cuenta Corriente BCP: <strong>191-XXXXXX-X-XX</strong> (CCI: 002-191-XXXXXXXXX-XX).';
+        }
+    }
+
     document.getElementById('cbProcedureType').addEventListener('change', evaluarTipoTramite);
 
     // CONTROL DEL SCRIPT AL CARGAR LA PÁGINA
@@ -393,16 +473,15 @@
         const nom = document.getElementById('mRepNombres').value;
         const ape = document.getElementById('mRepApellidos').value;
         const correo = document.getElementById('mRepCorreo').value;
-        const fechaNac = document.getElementById('mRepFechaNac').value; // Captura la fecha autocompletada
+        const fechaNac = document.getElementById('mRepFechaNac').value;
         const telf = document.getElementById('mRepTelefono').value;
 
-        // Si existen los datos de registro básicos, sincroniza inmediatamente los inputs ocultos
         if(dni && nom && ape) {
             document.getElementById('hRepDni').value = dni;
             document.getElementById('hRepNombres').value = nom;
             document.getElementById('hRepApellidos').value = ape;
             document.getElementById('hRepCorreo').value = correo;
-            document.getElementById('hRepFechaNac').value = fechaNac; // Asigna la fecha al formulario de envío
+            document.getElementById('hRepFechaNac').value = fechaNac;
             document.getElementById('hRepTelefono').value = telf;
             document.getElementById('hRepNacionalidad').value = document.getElementById('mRepNacionalidad').value;
             document.getElementById('hRepEstadoCivil').value = selectCivil.value;

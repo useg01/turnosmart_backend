@@ -63,5 +63,12 @@ public class AppointmentRequestDTO {
 
     private String notes;
 
+    // === Datos de pago (ahora obligatorio al crear el trámite) ===
+    @NotBlank(message = "Seleccione un método de pago")
+    private String paymentMethod;
+
+    @NotBlank(message = "Debe ingresar el número de operación del pago")
+    private String operationNumber;
+
     // ❌ El método manual vacío que estaba aquí fue eliminado.
 }

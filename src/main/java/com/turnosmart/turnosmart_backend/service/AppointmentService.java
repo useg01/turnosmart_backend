@@ -26,6 +26,14 @@ public class AppointmentService {
     private final UserRepository userRepo;
     private final ProcedureTypeRepository procedureTypeRepo;
     private final AppointmentLogRepository logRepo;
+    private final AppointmentDocumentRepository documentRepo;
+    private final FileService fileService;
+
+    // Lista fija (temporal) de códigos de operación válidos para Yape/Transferencia.
+    // TODO: mover a tabla en BD si se necesita gestionar desde un panel administrativo.
+    private static final java.util.Set<String> CODIGOS_OPERACION_VALIDOS = java.util.Set.of(
+            "012345", "054823", "112233", "998877", "445566"
+    );
 
     public long count() {
         return appointmentRepo.count();
@@ -59,6 +67,13 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponseDTO createAppointment(AppointmentRequestDTO dto, Long clientUserId) {
+
+        // Validación del pago: el código de operación debe estar en la lista permitida.
+        String codigoIngresado = dto.getOperationNumber() != null ? dto.getOperationNumber().trim() : "";
+        if (codigoIngresado.isEmpty() || !CODIGOS_OPERACION_VALIDOS.contains(codigoIngresado)) {
+            throw new BusinessException("El número de operación ingresado no es válido. Verifique el código de su comprobante de pago e intente nuevamente.");
+        }
+
         List<Lawyer> availableLawyers = lawyerRepo.findLawyersOrderByLoad();
         if (availableLawyers.isEmpty()) {
             throw new BusinessException("No existen abogados activos registrados en el sistema para la asignación.");
@@ -83,6 +98,11 @@ public class AppointmentService {
         app.setIdentifier(dto.getIdentifier());
         app.setBusinessName(dto.getBusinessName());
         app.setStatus(AppointmentStatus.PENDIENTE_EVALUACION);
+
+        // Datos de pago, ya validados arriba
+        app.setPaymentMethod(dto.getPaymentMethod());
+        app.setOperationNumber(codigoIngresado);
+        app.setIsPaid(true);
 
         // =========================================================================
         // CONSTRUCCIÓN DE LA HOJA INFORMATIVA COMPLETA (TEXTO PLANO)
@@ -186,6 +206,24 @@ public class AppointmentService {
         return appointmentRepo.findByClientId(clientId);
     }
 
+    /**
+     * Guarda la ruta del PDF de carta legal generado y cambia el estado a ENTREGADO.
+     * Se llama justo después de que DocumentGeneratorService genera el archivo.
+     */
+    @Transactional
+    public void guardarRutaCarta(Long appId, String rutaCarta, Long actorId) {
+        Appointment app = appointmentRepo.findById(appId)
+                .orElseThrow(() -> new BusinessException("Trámite no encontrado."));
+
+        app.setCartaGeneradaUrl(rutaCarta);
+        app.setStatus(AppointmentStatus.ENTREGADO);
+        appointmentRepo.save(app);
+
+        registrarLog(app, AppointmentStatus.DOCUMENTOS_ENVIADOS.name(),
+                AppointmentStatus.ENTREGADO.name(),
+                "Carta legal generada automáticamente: " + rutaCarta, actorId);
+    }
+
     public List<Appointment> findByLawyer(Long lawyerId) {
         return appointmentRepo.findByLawyerId(lawyerId);
     }
@@ -195,12 +233,44 @@ public class AppointmentService {
                 .orElseThrow(() -> new BusinessException("No se encontró el trámite con ticket: " + ticket));
     }
 
+    /**
+     * Sube los documentos obligatorios del cliente (DNI y Recibo de Agua/Luz)
+     * para un trámite. Cada archivo se guarda físicamente vía FileService y se
+     * registra como un AppointmentDocument con su tipo (DNI / RECIBO_SERVICIO),
+     * de modo que el abogado pueda identificar cuál es cuál al revisarlos.
+     * Permite reemplazar/agregar documentos en envíos posteriores.
+     */
     @Transactional
-    public void uploadDocuments(Long appointmentId, List<MultipartFile> files, Long userId) {
+    public void uploadDocuments(Long appointmentId, MultipartFile fileDni, MultipartFile fileRecibo, Long userId) {
         Appointment app = appointmentRepo.findById(appointmentId)
                 .orElseThrow(() -> new BusinessException("Cita no encontrada para subir archivos."));
 
-        registrarLog(app, app.getStatus().name(), app.getStatus().name(), "Se cargaron nuevos documentos adjuntos.", userId);
+        if (fileDni == null || fileDni.isEmpty() || fileRecibo == null || fileRecibo.isEmpty()) {
+            throw new BusinessException("Debe adjuntar tanto el DNI como el Recibo de Agua o Luz en formato PDF.");
+        }
+
+        String nombreDni = fileService.save(fileDni, app.getTicketNumber() + "_DNI");
+        AppointmentDocument docDni = new AppointmentDocument();
+        docDni.setAppointment(app);
+        docDni.setFileName(nombreDni);
+        docDni.setFileType("DNI");
+        docDni.setFileUrl("/uploads/tramites/" + nombreDni);
+        documentRepo.save(docDni);
+
+        String nombreRecibo = fileService.save(fileRecibo, app.getTicketNumber() + "_RECIBO");
+        AppointmentDocument docRecibo = new AppointmentDocument();
+        docRecibo.setAppointment(app);
+        docRecibo.setFileName(nombreRecibo);
+        docRecibo.setFileType("RECIBO_SERVICIO");
+        docRecibo.setFileUrl("/uploads/tramites/" + nombreRecibo);
+        documentRepo.save(docRecibo);
+
+        String estadoAnterior = app.getStatus().name();
+        app.setStatus(AppointmentStatus.DOCUMENTOS_ENVIADOS);
+        appointmentRepo.save(app);
+
+        registrarLog(app, estadoAnterior, AppointmentStatus.DOCUMENTOS_ENVIADOS.name(),
+                "El cliente cargó/actualizó sus documentos: DNI y Recibo de Agua/Luz.", userId);
     }
 
     private void registrarLog(Appointment app, String oldS, String newS, String comment, Long userId) {
