@@ -5,7 +5,10 @@ import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.repository.RoleRepository;
 import com.turnosmart.turnosmart_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +17,7 @@ public class AuthService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public void register(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -36,8 +40,42 @@ public class AuthService {
     }
 
     public boolean authenticate(String email, String password) {
-        return userRepository.findByEmail(email)
-                .map(user -> user.getPassword().equals(password))
-                .orElse(false);
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return false; // Si el correo no existe, no hacemos nada más
+        }
+
+        User user = userOpt.get();
+
+        // 1. CONTROL DE SEGURIDAD: Si ya superó los intentos, la cuenta está bloqueada
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            throw new RuntimeException("La cuenta se encuentra bloqueada por superar el límite de 3 intentos fallidos.");
+        }
+
+        // 2. VERIFICACIÓN DE CREDENCIALES
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            // Si la clave es correcta y tenía intentos acumulados, los limpiamos a 0
+            if (user.getFailedAttempts() == null || user.getFailedAttempts() > 0) {
+                user.setFailedAttempts(0);
+                userRepository.save(user);
+            }
+            return true;
+        } else {
+            // Si la clave es incorrecta, sumamos un intento fallido
+            int currentAttempts = (user.getFailedAttempts() != null) ? user.getFailedAttempts() : 0;
+            currentAttempts++;
+            user.setFailedAttempts(currentAttempts);
+
+            // Si llega a 3 intentos incorrectos, bloqueamos la cuenta por completo
+            if (currentAttempts >= 3) {
+                user.setAccountLocked(true);
+                userRepository.save(user);
+                throw new RuntimeException("Contraseña incorrecta. La cuenta ha sido bloqueada tras 3 intentos fallidos.");
+            }
+
+            userRepository.save(user);
+            return false;
+        }
     }
 }

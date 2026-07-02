@@ -1,6 +1,7 @@
 package com.turnosmart.turnosmart_backend.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -31,5 +32,10 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/uploads/cartas/**")
                 .addResourceLocations("file:uploads/cartas/");
+    }
+
+    @Bean
+    public org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 }

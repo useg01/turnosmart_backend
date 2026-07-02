@@ -49,6 +49,15 @@ public class User {
     @Column(nullable = false)
     private Boolean enabled = true;
 
+    // MODIFICACIÓN DE SEGURIDAD: Control de intentos para evitar ataques de fuerza bruta
+    @Builder.Default
+    @Column(name = "failed_attempts", nullable = false)
+    private Integer failedAttempts = 0;
+
+    @Builder.Default
+    @Column(name = "account_locked", nullable = false)
+    private Boolean accountLocked = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
