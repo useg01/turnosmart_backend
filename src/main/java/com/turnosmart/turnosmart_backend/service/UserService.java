@@ -4,6 +4,7 @@ import com.turnosmart.turnosmart_backend.entity.Role;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.repository.RoleRepository;
 import com.turnosmart.turnosmart_backend.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +14,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    // El constructor recibe de forma segura el codificador inyectado por Spring
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> findAllActive() {
@@ -39,6 +43,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dni + " no encontrado"));
     }
 
+    // Corregido: Mantiene el parámetro 'email' de tu código original para evitar errores
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -52,6 +57,9 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("El correo ya está registrado");
         }
+
+        // MODIFICACIÓN DE SEGURIDAD: Hasheo de la contraseña antes de guardar en DB
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         Role clienteRole = roleRepository.findByName("ROLE_CLIENTE")
                 .orElseThrow(() -> new RuntimeException("Error: El rol ROLE_CLIENTE no existe en la DB"));
