@@ -2,9 +2,10 @@ package com.turnosmart.turnosmart_backend.controller;
 
 import com.turnosmart.turnosmart_backend.dto.AppointmentRequestDTO;
 import com.turnosmart.turnosmart_backend.entity.User;
+import com.turnosmart.turnosmart_backend.entity.Appointment;
 import com.turnosmart.turnosmart_backend.service.AppointmentService;
 import com.turnosmart.turnosmart_backend.service.LawyerService;
-import com.turnosmart.turnosmart_backend.repository.ProcedureTypeRepository; // Asumiendo que existe
+import com.turnosmart.turnosmart_backend.repository.ProcedureTypeRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,6 +35,9 @@ public class AppointmentController {
             return "redirect:/admin/dashboard";
         }
 
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        model.addAttribute("usuarioLogueado", loggedUser);
+
         model.addAttribute("abogados", lawyerService.findAll());
         model.addAttribute("procedimientos", procedureTypeRepo.findAll());
         model.addAttribute("appointmentRequest", new AppointmentRequestDTO());
@@ -42,19 +46,15 @@ public class AppointmentController {
 
     @PostMapping("/save")
     public String saveAppointment(@ModelAttribute AppointmentRequestDTO dto,
-                                  @RequestParam(value = "files", required = false) List<MultipartFile> files,
-                                  @RequestParam(value = "action", defaultValue = "enviar") String action,
                                   HttpSession session,
+                                  RedirectAttributes redirectAttributes,
                                   Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) return "redirect:/login";
 
-        boolean esBorrador = "borrador".equals(action);
-
         try {
             if ("JURIDICA".equals(dto.getRepresentationType()) && dto.getIdentifier() != null && !dto.getIdentifier().trim().isEmpty()) {
                 String ruc = dto.getIdentifier().trim();
-
                 if (!ruc.matches("^(10|20)\\d{9}$")) {
                     throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
                             "Excepción E1: El identificador de la persona jurídica (RUC) ingresado no cumple con el formato válido de 11 dígitos."
@@ -62,39 +62,52 @@ public class AppointmentController {
                 }
             }
 
-            if (!esBorrador && (files == null || files.isEmpty() || files.get(0).isEmpty())) {
-                throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
-                        "RN-01: No se puede guardar ni enviar el trámite si falta cargar alguno de los documentos obligatorios."
-                );
-            }
-
-            if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
-                for (MultipartFile file : files) {
-                    String contentType = file.getContentType();
-                    if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
-                        throw new com.turnosmart.turnosmart_backend.exception.BusinessException(
-                                "RN-02 / E1: Los documentos adjuntos deben subirse obligatoriamente en formato PDF."
-                        );
-                    }
-                }
-            }
-
             com.turnosmart.turnosmart_backend.dto.AppointmentResponseDTO nuevoTramite =
-                    appointmentService.createAppointment(dto, loggedUser.getId(), esBorrador);
+                    appointmentService.createAppointment(dto, loggedUser.getId());
 
-            if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
-                appointmentService.uploadDocuments(nuevoTramite.getId(), files, loggedUser.getId());
-            }
+            Appointment expediente = appointmentService.findByTicket(nuevoTramite.getTicketNumber());
+            User datosAbogado = expediente.getLawyer().getUser();
+            String nombreCompletoAbogado = datosAbogado.getFirstName() + " " + datosAbogado.getLastName();
 
-            return "redirect:/cliente/dashboard?success";
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "¡Trámite generado con éxito! Ticket: " + nuevoTramite.getTicketNumber() +
+                            ". Asignado automáticamente al Especialista: " + nombreCompletoAbogado);
+
+            return "redirect:/cliente/dashboard";
 
         } catch (com.turnosmart.turnosmart_backend.exception.BusinessException e) {
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("abogados", lawyerService.findAll());
             model.addAttribute("procedimientos", procedureTypeRepo.findAll());
             model.addAttribute("appointmentRequest", dto);
             return "cliente/nuevo-tramite";
         }
+    }
+
+    @PostMapping("/api/tramites/pagar/{id}")
+    public String procesarPago(@PathVariable Long id,
+                               @RequestParam("paymentMethod") String paymentMethod,
+                               @RequestParam("operationNumber") String operationNumber,
+                               RedirectAttributes redirectAttributes) {
+
+        redirectAttributes.addFlashAttribute("successMessage", "Pago registrado con éxito. El especialista validará el número de operación.");
+        return "redirect:/cliente/dashboard";
+    }
+
+    @PostMapping("/api/tramites/subsanar/{id}")
+    public String procesarSubsanacion(@PathVariable Long id,
+                                      @RequestParam("clientObservation") String clientObservation,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
+
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null) return "redirect:/login";
+
+        appointmentService.subsanarTramite(id, clientObservation, loggedUser.getId());
+
+        redirectAttributes.addFlashAttribute("successMessage",
+                "Tu respuesta fue enviada con éxito. El especialista revisará la subsanación.");
+
+        return "redirect:/cliente/dashboard";
     }
 
     @GetMapping("/api/dias-llenos")

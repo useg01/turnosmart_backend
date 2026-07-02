@@ -25,22 +25,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Botón Volver con estilo refinado */
-        .btn-back {
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .btn-back:hover {
-            color: var(--primary-color);
-            transform: translateX(-4px);
-        }
-
-        /* Tarjeta de Formulario estilo Captura 2026 */
         .form-card {
             border: none;
             border-radius: 24px;
@@ -55,7 +39,6 @@
             color: var(--text-main);
         }
 
-        /* Estilo de Inputs y Labels */
         .form-label {
             font-weight: 700;
             color: var(--text-main);
@@ -63,7 +46,6 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.6rem;
-            margin-left: 0.2rem;
         }
 
         .form-control, .form-select {
@@ -71,8 +53,7 @@
             padding: 0.8rem 1.2rem;
             border: 1px solid var(--border-color);
             font-size: 0.95rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: #ffffff;
+            transition: all 0.2s;
         }
 
         .form-control:focus, .form-select:focus {
@@ -81,38 +62,18 @@
             outline: none;
         }
 
-        /* Botón Principal */
         .btn-primary {
             border-radius: 14px;
             padding: 1rem;
             font-weight: 600;
             background-color: var(--primary-color);
             border: none;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-            transition: all 0.3s;
         }
 
         .btn-primary:hover {
             background-color: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
-        /* Botón Borrador */
-        .btn-draft {
-            border-radius: 14px;
-            padding: 1rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        /* Decoración de sección */
-        .section-step {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
         .step-number {
             width: 32px;
             height: 32px;
@@ -123,16 +84,11 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.9rem;
         }
 
-        .alert-custom {
+        .modal-content {
+            border-radius: 20px;
             border: none;
-            border-radius: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .form-card { padding: 2rem 1.5rem !important; }
         }
     </style>
 </head>
@@ -140,8 +96,8 @@
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-7">
-            <a th:href="@{/cliente/dashboard}" class="btn-back text-decoration-none mb-4" onclick="return confirm('¿Está seguro de que desea desistir del registro? Se borrarán los datos temporales ingresados.');">
+        <div class="col-lg-8">
+            <a th:href="@{/cliente/dashboard}" class="btn btn-light rounded-pill px-4 fw-bold mb-4">
                 <i class="bi bi-arrow-left"></i> Volver al Panel
             </a>
 
@@ -149,37 +105,25 @@
                 <div class="header mb-5">
                     <div class="d-flex align-items-center gap-3 mb-2">
                         <div class="step-number"><i class="bi bi-file-earmark-text"></i></div>
-                        <h2 class="mb-0">Nueva Solicitud</h2>
+                        <h2 class="mb-0">Solicitud de Trámite</h2>
                     </div>
-                    <p class="text-muted ps-5">Completa los detalles para agendar tu trámite notarial.</p>
+                    <p class="text-muted ps-5">Completa los componentes del expediente de gestión de poderes notariales.</p>
                 </div>
 
-                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post" enctype="multipart/form-data" onsubmit="document.getElementById('btnSubmit').disabled = true; document.getElementById('btnDraft').disabled = true;">
-
-                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show alert-custom shadow-sm mb-4" role="alert">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-exclamation-triangle-fill fs-5" style="color: #ef4444;"></i>
-                            <span class="small fw-semibold" th:text="${error}">Mensaje de error de negocio</span>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-
+                <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post">
                     <div class="row g-4">
 
                         <div class="col-12">
-                            <label class="form-label">Tipo de Trámite</label>
+                            <label class="form-label">Selección de trámite</label>
                             <select th:field="*{procedureTypeId}" id="cbProcedureType" class="form-select" required>
-                                <option value="">Seleccione un servicio...</option>
-                                <option th:each="p : ${procedimientos}"
-                                        th:value="${p.id}"
-                                        th:text="|${p.name} — S/ ${p.price != null ? p.price : '0.00'}|"></option>
+                                <option value="">Seleccione el trámite...</option>
+                                <option th:each="p : ${procedimientos}" th:value="${p.id}" th:text="${p.name}"></option>
                             </select>
                         </div>
 
                         <div id="seccionRepresentacion" class="col-12" style="display: none;">
-                            <div class="p-4 rounded-4 border" style="background-color: #f8fafc; border-color: #e2e8f0;">
-                                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-building-add me-2"></i> Datos de Representación Legal (CUS05)</h6>
-
+                            <div class="p-4 rounded-4 border" style="background-color: #f8fafc;">
+                                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-building-add me-2"></i>Módulo de Representación Legal</h6>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Tipo de Persona</label>
@@ -189,143 +133,284 @@
                                             <option value="NATURAL">Persona Natural</option>
                                         </select>
                                     </div>
-
                                     <div class="col-md-6">
                                         <label class="form-label" id="lblIdentifier">RUC de la Empresa</label>
-                                        <input type="text" th:field="*{identifier}" id="txtIdentifier" class="form-control" placeholder="Ej. 20123456789">
+                                        <input type="text" th:field="*{identifier}" id="txtIdentifier" class="form-control">
                                     </div>
-
                                     <div class="col-12">
                                         <label class="form-label" id="lblName">Razón Social de la Representada</label>
-                                        <input type="text" th:field="*{businessName}" id="txtName" class="form-control" placeholder="Nombre legal o comercial completo">
-                                    </div>
-
-                                    <div class="col-12">
-                                        <div class="alert alert-warning m-0 py-2 px-3 rounded-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border: none;">
-                                            <i class="bi bi-exclamation-circle-fill fs-6 text-warning"></i>
-                                            <span class="fw-medium text-warning-emphasis"><strong>RN-01:</strong> La vigencia de poder adjunta no debe tener una antigüedad mayor a 30 días calendario.</span>
-                                        </div>
+                                        <input type="text" th:field="*{businessName}" id="txtName" class="form-control">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label text-primary">
-                                <i class="bi bi-file-earmark-pdf-fill me-1" style="color: #ef4444;"></i> Documentos requeridos (Formato PDF)
-                            </label>
-                            <div class="p-4 bg-light rounded-4 text-center border-2" style="border: 2px dashed #cbd5e1;">
-                                <i class="bi bi-cloud-arrow-up text-primary display-6 mb-2 d-block"></i>
-                                <input type="file" name="files" class="form-control rounded-3" accept=".pdf" multiple>
-                                <div class="form-text text-muted mt-2" style="font-size: 0.75rem;">
-                                    Por favor, selecciona los documentos escaneados obligatorios en formato PDF. Puedes subir varios archivos a la vez.
-                                </div>
-                            </div>
+                            <label class="form-label">Descripción General del Requerimiento</label>
+                            <textarea th:field="*{notes}" id="txtMainNotes" class="form-control" rows="3" placeholder="Detalle los requerimientos generales de la atención..." required></textarea>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Especialista Preferido</label>
-                            <select th:field="*{lawyerId}" class="form-select">
-                                <option value="">Cualquier abogado disponible</option>
-                                <option th:each="a : ${abogados}"
-                                        th:value="${a.id}"
-                                        th:text="${a.user != null ? a.user.firstName + ' ' + a.user.lastName : 'Especialista sin datos'}">
-                                </option>
-                            </select>
+                        <div class="col-md-6">
+                            <label class="form-label">Datos del Representado (Otorga)</label>
+                            <button type="button" class="btn btn-outline-primary w-100 p-3 rounded-3 text-start d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalRepresentado">
+                                <span><i class="bi bi-person-fill-gear me-2"></i> Configurar datos básicos</span>
+                                <i class="bi bi-chevron-right" id="iconCheckRep"></i>
+                            </button>
+                            <div id="summaryRepresentado" class="form-text text-muted mt-1 small">Faltan registrar datos obligatorios.</div>
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label">Observaciones Adicionales</label>
-                            <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="¿Algún detalle extra que debamos saber?"></textarea>
+                        <div class="col-md-6">
+                            <label class="form-label">Datos del Apoderado (Recibe)</label>
+                            <button type="button" class="btn btn-outline-primary w-100 p-3 rounded-3 text-start d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalApoderado">
+                                <span><i class="bi bi-person-fill-check me-2"></i> Configurar datos básicos</span>
+                                <i class="bi bi-chevron-right" id="iconCheckApo"></i>
+                            </button>
+                            <div id="summaryApoderado" class="form-text text-muted mt-1 small">Faltan registrar datos obligatorios.</div>
                         </div>
+
+                        <!-- Inputs ocultos para el Representado -->
+                        <input type="hidden" th:field="*{repDni}" id="hRepDni">
+                        <input type="hidden" th:field="*{repNombres}" id="hRepNombres">
+                        <input type="hidden" th:field="*{repApellidos}" id="hRepApellidos">
+                        <input type="hidden" th:field="*{repFechaNac}" id="hRepFechaNac">
+                        <input type="hidden" th:field="*{repEstadoCivil}" id="hRepEstadoCivil">
+                        <input type="hidden" th:field="*{repNacionalidad}" id="hRepNacionalidad">
+                        <input type="hidden" th:field="*{repCorreo}" id="hRepCorreo">
+                        <input type="hidden" th:field="*{repTelefono}" id="hRepTelefono">
+
+                        <input type="hidden" th:field="*{apoDni}" id="hApoDni">
+                        <input type="hidden" th:field="*{apoNombres}" id="hApoNombres">
+                        <input type="hidden" th:field="*{apoApellidos}" id="hApoApellidos">
+                        <input type="hidden" th:field="*{apoFacultades}" id="hApoFacultades">
 
                         <div class="col-12 mt-5">
-                            <div class="row g-3">
-                                <div class="col-md-7">
-                                    <button type="submit" id="btnSubmit" name="action" value="enviar" class="btn btn-primary w-100 shadow-sm">
-                                        <i class="bi bi-send-check me-2"></i> Enviar Solicitud de Trámite
-                                    </button>
-                                </div>
-                                <div class="col-md-5">
-                                    <button type="submit" id="btnDraft" name="action" value="borrador" class="btn btn-outline-secondary btn-draft w-100">
-                                        <i class="bi bi-archive me-2"></i> Guardar Borrador
-                                    </button>
-                                </div>
-                            </div>
+                            <button type="submit" id="btnSubmit" class="btn btn-primary w-100 shadow-sm">
+                                <i class="bi bi-file-earmark-plus me-2"></i> Generar Solicitud de Trámite
+                            </button>
                         </div>
                     </div>
                 </form>
-            </div>
-
-            <div class="text-center mt-4">
-                <p class="small text-muted">
-                    <i class="bi bi-info-circle me-1"></i> Una vez enviada, podrás revisar el estado desde tu panel principal.
-                </p>
             </div>
         </div>
     </div>
 </div>
 
+<!-- MODAL REPRESENTADO -->
+<div class="modal fade" id="modalRepresentado" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-person-add text-primary me-2"></i> Datos del Representado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info border-0 rounded-3 mb-4 small d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill fs-5 text-primary"></i>
+                    <span>Tus datos de cuenta han sido vinculados automáticamente a esta solicitud.</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">DNI</label>
+                        <input type="text" id="mRepDni" class="form-control" maxlength="8"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.dni : ''}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Nombres</label>
+                        <input type="text" id="mRepNombres" class="form-control"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.firstName : ''}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Apellidos</label>
+                        <input type="text" id="mRepApellidos" class="form-control"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.lastName : ''}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Fecha de Nacimiento</label>
+                        <!-- AUTOCOMPLETADO DESDE LA BD AL REGISTRARSE -->
+                        <input type="date" id="mRepFechaNac" class="form-control"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.birthDate : ''}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Estado Civil</label>
+                        <select id="mRepEstadoCivil" class="form-select" th:data-saved-status="${usuarioLogueado != null ? usuarioLogueado.civilStatus : ''}">
+                            <option value="SOLTERO">Soltero(a)</option>
+                            <option value="CASADO">Casado(a)</option>
+                            <option value="DIVORCIADO">Divorciado(a)</option>
+                            <option value="VIUDO">Viudo(a)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Nacionalidad</label>
+                        <input type="text" id="mRepNacionalidad" class="form-control" value="Peruana">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Correo electrónico</label>
+                        <input type="email" id="mRepCorreo" class="form-control"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.email : ''}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Teléfono / Celular</label>
+                        <input type="text" id="mRepTelefono" class="form-control"
+                               th:value="${usuarioLogueado != null ? usuarioLogueado.phone : ''}">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary rounded-3 px-4" onclick="guardarDatosRepresentado()">Guardar Datos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL APODERADO -->
+<div class="modal fade" id="modalApoderado" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold text-dark"><i class="bi bi-person-check text-primary me-2"></i> Datos del Apoderado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label text-secondary small">DNI del Apoderado</label>
+                        <input type="text" id="mApoDni" class="form-control" maxlength="8" placeholder="8 dígitos obligatorios">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-secondary small">Nombres</label>
+                        <input type="text" id="mApoNombres" class="form-control" placeholder="Nombres completos">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-secondary small">Apellidos</label>
+                        <input type="text" id="mApoApellidos" class="form-control" placeholder="Apellidos completos">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-secondary small">Facultades específicas a otorgar</label>
+                        <textarea id="mApoFacultades" class="form-control" rows="4" placeholder="Escriba detalladamente los poderes que se le confieren al apoderado..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary rounded-3 px-4" onclick="guardarDatosApoderado()">Guardar Datos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Función centralizada para evaluar el estado y visibilidad del formulario
+    function guardarDatosRepresentado() {
+        const dni = document.getElementById('mRepDni').value;
+        const nom = document.getElementById('mRepNombres').value;
+        const ape = document.getElementById('mRepApellidos').value;
+
+        if(!dni || !nom || !ape) {
+            alert("Por favor rellene al menos los datos de identidad básicos (DNI, Nombres y Apellidos).");
+            return;
+        }
+
+        document.getElementById('hRepDni').value = dni;
+        document.getElementById('hRepNombres').value = nom;
+        document.getElementById('hRepApellidos').value = ape;
+        document.getElementById('hRepFechaNac').value = document.getElementById('mRepFechaNac').value;
+        document.getElementById('hRepEstadoCivil').value = document.getElementById('mRepEstadoCivil').value;
+        document.getElementById('hRepNacionalidad').value = document.getElementById('mRepNacionalidad').value;
+        document.getElementById('hRepCorreo').value = document.getElementById('mRepCorreo').value;
+        document.getElementById('hRepTelefono').value = document.getElementById('mRepTelefono').value;
+
+        document.getElementById('summaryRepresentado').innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Registrado: ${nom} ${ape} (${dni})</span>`;
+        document.getElementById('iconCheckRep').className = "bi bi-check-circle-fill text-success";
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalRepresentado'));
+        modal.hide();
+    }
+
+    function guardarDatosApoderado() {
+        const dni = document.getElementById('mApoDni').value;
+        const nom = document.getElementById('mApoNombres').value;
+        const ape = document.getElementById('mApoApellidos').value;
+        const fac = document.getElementById('mApoFacultades').value;
+
+        if(!dni || !nom || !ape || !fac) {
+            alert("Por favor rellene todos los campos (DNI, Nombres, Apellidos y Facultades).");
+            return;
+        }
+
+        document.getElementById('hApoDni').value = dni;
+        document.getElementById('hApoNombres').value = nom;
+        document.getElementById('hApoApellidos').value = ape;
+        document.getElementById('hApoFacultades').value = fac;
+
+        document.getElementById('summaryApoderado').innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Registrado: ${nom} ${ape} (${dni})</span>`;
+        document.getElementById('iconCheckApo').className = "bi bi-check-circle-fill text-success";
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalApoderado'));
+        modal.hide();
+    }
+
     function evaluarTipoTramite() {
         const combo = document.getElementById('cbProcedureType');
-        if (!combo.value) return; // Si no hay selección, salta
+        if (!combo.value) return;
 
         const selectedText = combo.options[combo.selectedIndex].text.toLowerCase();
         const seccionCUS05 = document.getElementById('seccionRepresentacion');
-        const txtIdentifier = document.getElementById('txtIdentifier');
-        const txtName = document.getElementById('txtName');
-        const repoType = document.getElementById('repoType');
 
         if (selectedText.includes('representación') || selectedText.includes('representacion')) {
             seccionCUS05.style.display = 'block';
-            txtIdentifier.required = true;
-            txtName.required = true;
-            repoType.required = true;
         } else {
             seccionCUS05.style.display = 'none';
-            txtIdentifier.required = false;
-            txtName.required = false;
-            repoType.required = false;
-
-            // Limpieza estricta de valores (Flujo A1)
-            txtIdentifier.value = '';
-            txtName.value = '';
-            repoType.value = '';
         }
     }
 
-    // Escuchar los cambios en tiempo de ejecución
+    function actualizarLabelsCUS05() {
+        const type = document.getElementById('repoType').value;
+        const lblId = document.getElementById('lblIdentifier');
+        const lblName = document.getElementById('lblName');
+        if(type === 'NATURAL') {
+            lblId.innerText = 'DNI del Representado';
+            lblName.innerText = 'Nombre Completo del Representado';
+        } else {
+            lblId.innerText = 'RUC de la Empresa';
+            lblName.innerText = 'Razón Social de la Representada';
+        }
+    }
+
     document.getElementById('cbProcedureType').addEventListener('change', evaluarTipoTramite);
 
-    // Ejecutar al cargar la página por si Thymeleaf retorna debido a un error previo
-    document.addEventListener('DOMContentLoaded', function() {
+    // CONTROL DEL SCRIPT AL CARGAR LA PÁGINA
+    window.addEventListener('DOMContentLoaded', () => {
         evaluarTipoTramite();
-        actualizarLabelsCUS05();
-    });
 
-    // Cambiar dinámicamente etiquetas internas según la personería
-    function actualizarLabelsCUS05() {
-        const type = document.getElementById("repoType").value;
-        const lblIdentifier = document.getElementById("lblIdentifier");
-        const lblName = document.getElementById("lblName");
-        const txtIdentifier = document.getElementById("txtIdentifier");
-        const txtName = document.getElementById("txtName");
-
-        if(type === "NATURAL") {
-            lblIdentifier.innerText = "DNI del Representado";
-            lblName.innerText = "Nombre Completo del Representado";
-            txtIdentifier.placeholder = "Ej. 45678912";
-            txtName.placeholder = "Nombres y Apellidos";
-        } else {
-            lblIdentifier.innerText = "RUC de la Empresa";
-            lblName.innerText = "Razón Social de la Representada";
-            txtIdentifier.placeholder = "Ej. 20123456789";
-            txtName.placeholder = "Nombre legal o comercial completo";
+        const selectCivil = document.getElementById('mRepEstadoCivil');
+        const savedStatus = selectCivil.getAttribute('data-saved-status');
+        if(savedStatus) {
+            selectCivil.value = savedStatus;
         }
-    }
+
+        const dni = document.getElementById('mRepDni').value;
+        const nom = document.getElementById('mRepNombres').value;
+        const ape = document.getElementById('mRepApellidos').value;
+        const correo = document.getElementById('mRepCorreo').value;
+        const fechaNac = document.getElementById('mRepFechaNac').value; // Captura la fecha autocompletada
+        const telf = document.getElementById('mRepTelefono').value;
+
+        // Si existen los datos de registro básicos, sincroniza inmediatamente los inputs ocultos
+        if(dni && nom && ape) {
+            document.getElementById('hRepDni').value = dni;
+            document.getElementById('hRepNombres').value = nom;
+            document.getElementById('hRepApellidos').value = ape;
+            document.getElementById('hRepCorreo').value = correo;
+            document.getElementById('hRepFechaNac').value = fechaNac; // Asigna la fecha al formulario de envío
+            document.getElementById('hRepTelefono').value = telf;
+            document.getElementById('hRepNacionalidad').value = document.getElementById('mRepNacionalidad').value;
+            document.getElementById('hRepEstadoCivil').value = selectCivil.value;
+
+            document.getElementById('summaryRepresentado').innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Autocompletado: ${nom} ${ape} (${dni})</span>`;
+            document.getElementById('iconCheckRep').className = "bi bi-check-circle-fill text-success";
+        }
+    });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

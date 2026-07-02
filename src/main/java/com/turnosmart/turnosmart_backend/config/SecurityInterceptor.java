@@ -17,13 +17,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
         String rolElegido = (String) session.getAttribute("rolElegido");
         String requestURI = request.getRequestURI();
 
-        // 1. Si no hay sesión iniciada, rebota directo al login
         if (loggedUser == null || rolElegido == null) {
             response.sendRedirect("/login?error=no_session");
             return false; // Detiene la petición por completo
         }
 
-        // 2. Control de accesos por rutas jerárquicas
         if (requestURI.startsWith("/admin") && !"ADMIN".equals(rolElegido)) {
             response.sendRedirect("/login?error=acceso_denegado");
             return false;
@@ -39,6 +37,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        return true; // Continúa hacia el controlador si todo está correcto
+        return true;
     }
 }

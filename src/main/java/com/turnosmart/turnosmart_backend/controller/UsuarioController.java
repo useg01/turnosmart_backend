@@ -19,7 +19,6 @@ public class UsuarioController {
     private final UserService userService;
     private final AppointmentService appointmentService;
 
-    // VER PERFIL (Modo Lectura)
     @GetMapping("/perfil/{id}")
     public String verPerfil(@PathVariable Long id, Model model) {
         User user = userService.findById(id);
@@ -27,22 +26,19 @@ public class UsuarioController {
         return "perfil";
     }
 
-    // CARGAR FORMULARIO DE EDICIÓN (Nuevo)
     @GetMapping("/perfil/editar/{id}")
     public String editarPerfil(@PathVariable Long id, Model model) {
         User user = userService.findById(id);
         model.addAttribute("user", user);
-        return "perfil-editar"; // Esta será la vista con el DNI readonly
+        return "perfil-editar";
     }
 
-    // PROCESAR ACTUALIZACIÓN
     @PostMapping("/perfil/update")
     public String actualizarPerfil(@ModelAttribute User user) {
-        userService.update(user.getId(), user); // Este método ya protege el DNI
+        userService.update(user.getId(), user);
         return "redirect:/usuario/perfil/" + user.getId();
     }
 
-    // PANEL "MIS TRÁMITES"
     @GetMapping("/mis-tramites")
     public String listarMisTramites(@RequestParam Long clientId, Model model) {
         List<Appointment> misTurnos = appointmentService.findByClient(clientId);

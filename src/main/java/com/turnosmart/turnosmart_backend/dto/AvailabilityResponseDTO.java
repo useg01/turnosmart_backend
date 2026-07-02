@@ -12,9 +12,7 @@ public class AvailabilityResponseDTO {
 
     private LocalDate date;
 
-    // AVAILABLE, PARTIAL, FULL, HOLIDAY, WEEKEND
     private String dayStatus;
 
-    // Horarios disponibles
     private List<String> availableSlots;
 }

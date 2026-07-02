@@ -14,6 +14,24 @@ public class AppointmentRequestDTO {
     private String representationType;
     private String identifier;
     private String businessName;
+    private String repDni;
+    private String repNombres;
+    private String repApellidos;
+    private String repFechaNac;
+    private String repEstadoCivil;
+    private String repNacionalidad;
+    private String repCorreo;
+    private String repTelefono;
+    private String repDireccion;
+
+    // Datos del apoderado
+    private String apoDni;
+    private String apoNombres;
+    private String apoApellidos;
+    private String apoCorreo;
+    private String apoTelefono;
+    private String apoDireccion;
+    private String apoFacultades; // 🔥 AGREGADO AQUÍ COMO STRING
 
     @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
@@ -41,8 +59,9 @@ public class AppointmentRequestDTO {
     @NotNull(message = "Seleccione el tipo de trámite")
     private Long procedureTypeId;
 
-    // NULL = cualquier abogado disponible
     private Long lawyerId;
 
     private String notes;
+
+    // ❌ El método manual vacío que estaba aquí fue eliminado.
 }

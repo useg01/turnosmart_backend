@@ -17,7 +17,6 @@ public class GlobalControllerAdvice {
     @ModelAttribute
     public void addAttributes(Model model, Principal principal) {
         if (principal != null) {
-            // Buscamos al usuario logueado por su email
             User user = userService.findByEmail(principal.getName());
             model.addAttribute("user", user);
         }

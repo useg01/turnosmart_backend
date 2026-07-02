@@ -13,7 +13,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // Activamos el interceptor protegiendo únicamente las rutas privadas
         registry.addInterceptor(securityInterceptor)
                 .addPathPatterns("/admin/**", "/abogado/**", "/cliente/**");
     }
