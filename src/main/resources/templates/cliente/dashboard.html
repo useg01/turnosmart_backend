@@ -177,15 +177,8 @@
             <p class="text-muted">Gestiona tus trámites y turnos notariales desde un solo lugar.</p>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <a th:href="@{/cliente/catalogo}" class="action-card">
-                <div class="action-icon"><i class="bi bi-journal-text"></i></div>
-                <h5 class="fw-bold text-dark">Catálogo</h5>
-                <p class="small text-muted mb-0 px-3">Consulta precios, tiempos y requisitos legales por servicio.</p>
-            </a>
-        </div>
-
-        <div class="col-md-4 mb-4">
+        <!-- Se cambió a col-md-6 para cubrir el espacio del catálogo eliminado -->
+        <div class="col-md-6 mb-4">
             <a th:href="@{/appointments/crear}" class="action-card">
                 <div class="action-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-plus-lg"></i></div>
                 <h5 class="fw-bold text-dark">Nuevo Trámite</h5>
@@ -193,7 +186,8 @@
             </a>
         </div>
 
-        <div class="col-md-4 mb-4">
+        <!-- Se cambió a col-md-6 para equilibrar la fila perfectamente -->
+        <div class="col-md-6 mb-4">
             <a th:href="@{/cliente/perfil}" class="action-card">
                 <div class="action-icon" style="background: #eff6ff; color: #2563eb;">
                     <i class="bi bi-person-circle"></i>
