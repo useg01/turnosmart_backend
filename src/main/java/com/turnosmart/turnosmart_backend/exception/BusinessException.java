@@ -1,3 +1,4 @@
+//A10:2025 - Mala gestión de situaciones excepcionales
 package com.turnosmart.turnosmart_backend.exception;
 
 import org.springframework.http.HttpStatus;

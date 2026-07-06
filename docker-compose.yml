@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Servidor de Base de Datos
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysqldb_turnosmart
+    environment:
+      MYSQL_ROOT_PASSWORD: "data2026-"
+      MYSQL_DATABASE: turnosmart
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Tu aplicación Spring Boot
+  backend:
+    build: .
+    container_name: backend_turnosmart
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/turnosmart?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=data2026-
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+volumes:
+  mysql_data:

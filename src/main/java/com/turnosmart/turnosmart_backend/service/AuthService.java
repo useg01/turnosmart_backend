@@ -5,7 +5,10 @@ import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.repository.RoleRepository;
 import com.turnosmart.turnosmart_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,43 +16,66 @@ public class AuthService {
 
     private final UserService userService;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository; // Inyectamos el repositorio de roles
+    private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public void register(User user) {
-        // =========================================================
-        // REGLAS DE NEGOCIO (Validaciones del Core)
-        // =========================================================
-
-        // RN-01: El correo electrónico debe ser único
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("El correo electrónico ya se encuentra registrado.");
         }
 
-        // Validación extra de seguridad: El DNI debe ser único
         if (userRepository.existsByDni(user.getDni())) {
             throw new RuntimeException("El DNI ingresado ya se encuentra registrado.");
         }
-
-        // RN-02: La contraseña debe contener mínimo 8 caracteres
         if (user.getPassword() == null || user.getPassword().trim().length() < 8) {
             throw new RuntimeException("La contraseña es muy corta. Debe contener un mínimo de 8 caracteres.");
         }
 
-        // =========================================================
-        // ASIGNACIÓN DE ROL POR DEFECTO
-        // =========================================================
         Role defaultRole = roleRepository.findByName("ROLE_CLIENTE")
                 .orElseThrow(() -> new RuntimeException("Error crítico: El rol ROLE_CLIENTE no existe en la base de datos."));
 
         user.setSingleRole(defaultRole);
 
-        // Continuamos con el guardado normal en la capa de persistencia
         userService.register(user);
     }
 
     public boolean authenticate(String email, String password) {
-        return userRepository.findByEmail(email)
-                .map(user -> user.getPassword().equals(password))
-                .orElse(false);
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return false; // Si el correo no existe, no hacemos nada más
+        }
+
+        User user = userOpt.get();
+
+        // 1. CONTROL DE SEGURIDAD: Si ya superó los intentos, la cuenta está bloqueada
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            throw new RuntimeException("La cuenta se encuentra bloqueada por superar el límite de 3 intentos fallidos.");
+        }
+
+        // 2. VERIFICACIÓN DE CREDENCIALES
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            // Si la clave es correcta y tenía intentos acumulados, los limpiamos a 0
+            if (user.getFailedAttempts() == null || user.getFailedAttempts() > 0) {
+                user.setFailedAttempts(0);
+                userRepository.save(user);
+            }
+            return true;
+        } else {
+            // Si la clave es incorrecta, sumamos un intento fallido
+            int currentAttempts = (user.getFailedAttempts() != null) ? user.getFailedAttempts() : 0;
+            currentAttempts++;
+            user.setFailedAttempts(currentAttempts);
+
+            // Si llega a 3 intentos incorrectos, bloqueamos la cuenta por completo
+            if (currentAttempts >= 3) {
+                user.setAccountLocked(true);
+                userRepository.save(user);
+                throw new RuntimeException("Contraseña incorrecta. La cuenta ha sido bloqueada tras 3 intentos fallidos.");
+            }
+
+            userRepository.save(user);
+            return false;
+        }
     }
 }

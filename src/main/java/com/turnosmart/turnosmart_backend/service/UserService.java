@@ -4,6 +4,7 @@ import com.turnosmart.turnosmart_backend.entity.Role;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.repository.RoleRepository;
 import com.turnosmart.turnosmart_backend.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,13 +14,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    // El constructor recibe de forma segura el codificador inyectado por Spring
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    // LISTAR TODOS LOS USUARIOS ACTIVOS (Para la Cartera de Clientes)
     public List<User> findAllActive() {
         return userRepository.findAll().stream()
                 .filter(User::getEnabled)
@@ -40,14 +43,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dni + " no encontrado"));
     }
 
+    // Corregido: Mantiene el parámetro 'email' de tu código original para evitar errores
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
-    // CREAR USUARIO (Validando DNI y Email)
     public User register(User user) {
-        // Validar si el DNI ya existe
         if (userRepository.existsByDni(user.getDni())) {
             throw new RuntimeException("El DNI ya se encuentra registrado");
         }
@@ -56,6 +58,9 @@ public class UserService {
             throw new RuntimeException("El correo ya está registrado");
         }
 
+        // MODIFICACIÓN DE SEGURIDAD: Hasheo de la contraseña antes de guardar en DB
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         Role clienteRole = roleRepository.findByName("ROLE_CLIENTE")
                 .orElseThrow(() -> new RuntimeException("Error: El rol ROLE_CLIENTE no existe en la DB"));
 
@@ -63,7 +68,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // ACTUALIZAR USUARIO (Protegiendo el DNI)
     public User update(Long id, User updatedUser) {
         User user = findById(id);
 
@@ -91,7 +95,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    // Validar existencia por DNI
     public boolean existsByDni(String dni) {
         return userRepository.existsByDni(dni);
     }

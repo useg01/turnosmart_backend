@@ -32,50 +32,53 @@ public class AuthController {
                               @RequestParam String password,
                               HttpSession session,
                               Model model) {
+        try {
+            // 1. MODIFICACIÓN DE SEGURIDAD: Usamos la lógica centralizada de autenticación (valida hash y cuenta intentos)
+            boolean isAuthenticated = authService.authenticate(email, password);
 
-        User user = userService.findByEmail(email);
+            if (isAuthenticated) {
+                User user = userService.findByEmail(email);
 
-        if (user != null && user.getPassword().equals(password)) {
+                if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                    model.addAttribute("error", "El usuario no tiene un rol asignado en el sistema.");
+                    return "login";
+                }
 
-            // 1. Validar que el Set de roles no esté vacío
-            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-                model.addAttribute("error", "El usuario no tiene un rol asignado en el sistema.");
-                return "login";
+                List<String> roleNames = user.getRoles().stream()
+                        .map(role -> role.getName().toUpperCase())
+                        .toList();
+
+                String interfaz;
+
+                if (roleNames.contains("ROLE_ADMIN") || roleNames.contains("ADMIN")) {
+                    interfaz = "ADMIN";
+                } else if (roleNames.contains("ROLE_NOTARIO") || roleNames.contains("NOTARIO") || roleNames.contains("ROLE_ABOGADO") || roleNames.contains("ABOGADO")) {
+                    interfaz = "ABOGADO";
+                } else {
+                    interfaz = "CLIENTE";
+                }
+
+                session.setAttribute("loggedUser", user);
+                session.setAttribute("rolElegido", interfaz);
+
+                return switch (interfaz) {
+                    case "ADMIN" -> "redirect:/admin/dashboard";
+                    case "ABOGADO" -> "redirect:/abogado/dashboard";
+                    default -> "redirect:/cliente/dashboard";
+                };
             }
 
-            // 2. Extraer todos los nombres de los roles que posee el usuario en una lista limpia
-            List<String> roleNames = user.getRoles().stream()
-                    .map(role -> role.getName().toUpperCase())
-                    .toList();
+            // Si retorna false sin lanzar excepción, son credenciales incorrectas estándar
+            model.addAttribute("error", "Credenciales incorrectas o usuario no encontrado");
+            return "login";
 
-            // 3. Determinar la interfaz por orden de jerarquía estricta
-            String interfaz;
-
-            if (roleNames.contains("ROLE_ADMIN") || roleNames.contains("ADMIN")) {
-                interfaz = "ADMIN";
-            } else if (roleNames.contains("ROLE_NOTARIO") || roleNames.contains("NOTARIO") || roleNames.contains("ROLE_ABOGADO") || roleNames.contains("ABOGADO")) {
-                interfaz = "ABOGADO";
-            } else {
-                interfaz = "CLIENTE";
-            }
-
-            // 4. Guardar en sesión de forma segura
-            session.setAttribute("loggedUser", user);
-            session.setAttribute("rolElegido", interfaz);
-
-            // 5. Redirección automática basada en la jerarquía detectada
-            return switch (interfaz) {
-                case "ADMIN" -> "redirect:/admin/dashboard";
-                case "ABOGADO" -> "redirect:/abogado/dashboard";
-                default -> "redirect:/cliente/dashboard";
-            };
+        } catch (RuntimeException e) {
+            // 2. MODIFICACIÓN DE SEGURIDAD: Captura los mensajes de RuntimeException enviados por AuthService (como el bloqueo de cuenta)
+            model.addAttribute("error", e.getMessage());
+            return "login";
         }
-
-        model.addAttribute("error", "Credenciales incorrectas o usuario no encontrado");
-        return "login";
     }
 
-    // --- PANTALLA DE REGISTRO (GET) ---
     @GetMapping("/registro")
     public String registro(Model model) {
         if (!model.containsAttribute("usuario")) {
@@ -84,7 +87,6 @@ public class AuthController {
         return "registro";
     }
 
-    // --- PROCESAR EL REGISTRO (POST) ---
     @PostMapping("/registro")
     public String register(@ModelAttribute("usuario") User user, Model model) {
         try {

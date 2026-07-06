@@ -35,7 +35,7 @@ public class TurnoController {
     @PostMapping("/turnos")
     public String guardarTurno(@ModelAttribute AppointmentRequestDTO dto,
                                @RequestParam Long clientId) {
-        appointmentService.createAppointment(dto, clientId, false);
+        appointmentService.createAppointment(dto, clientId);
         return "redirect:/turnos";
     }
 }

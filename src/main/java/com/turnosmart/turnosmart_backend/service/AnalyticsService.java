@@ -16,29 +16,19 @@ public class AnalyticsService {
 
     private final AppointmentRepository appointmentRepo;
 
-    /**
-     * Calcula métricas analíticas para el Dashboard basadas en un filtro temporal.
-     * @param filter Filtro de tiempo (dia, semana, mes, año).
-     * @return Mapa con métricas calculadas.
-     */
     public Map<String, Object> getDashboardMetrics(String filter) {
         LocalDateTime start = getStartDate(filter);
         LocalDateTime end = LocalDateTime.now();
 
-        // 1. Total de trámites creados en este periodo
         long total = appointmentRepo.countByCreatedAtBetween(start, end);
 
-        // 2. Trámites en Revisión (Pendientes)
         long enRevision = appointmentRepo.countByStatusAndCreatedAtBetween(AppointmentStatus.REVISION, start, end);
 
-        // 3. Trámites Listos para firma (Eficiencia)
         long listos = appointmentRepo.countByStatusAndCreatedAtBetween(AppointmentStatus.LISTO_FIRMA, start, end);
 
-        // 4. Tasa de Regularización (Trámites observados)
         long regularizar = appointmentRepo.countByStatusAndCreatedAtBetween(AppointmentStatus.REGULARIZAR, start, end);
         double tasaReg = total > 0 ? (double) regularizar / total * 100 : 0;
 
-        // Empaquetado de métricas para la vista
         Map<String, Object> metrics = new HashMap<>();
         metrics.put("total", total);
         metrics.put("enCurso", enRevision);

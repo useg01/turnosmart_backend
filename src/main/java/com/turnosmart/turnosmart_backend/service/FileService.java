@@ -13,7 +13,6 @@ public class FileService {
 
     public String save(MultipartFile file, String ticket) {
         try {
-            // Validación de formato estricto (Regla 5.4)
             if (file.getContentType() == null || !file.getContentType().equals("application/pdf")) {
                 throw new BusinessException("Error: Solo se permiten archivos en formato .pdf");
             }

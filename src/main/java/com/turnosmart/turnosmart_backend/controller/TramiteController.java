@@ -41,27 +41,25 @@ public class TramiteController {
         return "redirect:/login";
     }
 
-    // =========================================================
-    // DASHBOARDS
-    // =========================================================
-
     @GetMapping("/abogado/dashboard")
     public String dashboardAbogado(HttpSession session, Model model) {
-        // 1. Obtenemos el usuario logueado (que es una cuenta de tipo abogado/notario)
         User loggedUser = (User) session.getAttribute("loggedUser");
 
-        // 2. Buscamos las citas usando el ID del usuario directamente en la Query
-        // Tu AppointmentRepository usa: WHERE a.lawyer.id = :lawyerId.
-        // Como en el script de inserción manual 'lawyers.id' coincide con 'users.id', usamos loggedUser.getId().
-        List<Appointment> tramites = appointmentRepository.findByLawyerId(loggedUser.getId());
+        List<Appointment> tramites = appointmentRepository.findAll();
+        List<Appointment> filtrados = new ArrayList<>();
 
-        // 3. Multi-inyectamos al modelo para blindar contra cualquier nombre que use tu HTML (tramites, citas, citasHoy)
-        List<Appointment> listaSegura = (tramites != null) ? tramites : new ArrayList<>();
+        if (tramites != null && loggedUser != null) {
+            for (Appointment a : tramites) {
+                if (a.getLawyer() != null && a.getLawyer().getUser() != null && loggedUser.getId().equals(a.getLawyer().getUser().getId())) {
+                    filtrados.add(a);
+                }
+            }
+        }
 
-        model.addAttribute("tramites", listaSegura);
-        model.addAttribute("citas", listaSegura);
-        model.addAttribute("citasHoy", listaSegura);
-        model.addAttribute("total", listaSegura.size());
+        model.addAttribute("tramites", filtrados);
+        model.addAttribute("citas", filtrados);
+        model.addAttribute("citasHoy", filtrados);
+        model.addAttribute("total", filtrados.size());
 
         return "abogado/dashboard";
     }
@@ -70,7 +68,7 @@ public class TramiteController {
     public String clienteDashboard(HttpSession session, Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
 
-        // Cambiamos la llamada para usar findByClientId
+        //A05:2025 - Inyección
         List<Appointment> misTramites = appointmentRepository.findByClientId(loggedUser.getId());
 
         model.addAttribute("usuario", loggedUser);
@@ -79,10 +77,6 @@ public class TramiteController {
         return "cliente/dashboard";
     }
 
-    // =========================================================
-    // CATÁLOGO E INFORMACIÓN
-    // =========================================================
-
     @GetMapping("/cliente/catalogo")
     public String verCatalogo(Model model) {
         List<ProcedureType> lista = procedureTypeRepository.findAll();
@@ -90,10 +84,6 @@ public class TramiteController {
         return "cliente/catalogo";
     }
 
-    /**
-     * Paso Intermedio: Muestra la información detallada del trámite.
-     * Vinculado al botón "Solicitar información" del catálogo.
-     */
     @GetMapping("/cliente/detalle/{id}")
     public String verDetalleTramite(@PathVariable Long id, Model model) {
         ProcedureType tramite = procedureTypeRepository.findById(id)
@@ -103,10 +93,6 @@ public class TramiteController {
         return "cliente/detalle-tramite";
     }
 
-    /**
-     * Paso Final: Muestra el formulario de solicitud.
-     * Vinculado al botón "Iniciar Trámite" dentro de la página de detalle.
-     */
     @GetMapping("/cliente/iniciar-solicitud/{id}")
     public String mostrarFormularioSolicitud(@PathVariable Long id, Model model) {
         ProcedureType tramite = procedureTypeRepository.findById(id)
@@ -120,10 +106,6 @@ public class TramiteController {
 
         return "cliente/nuevo-tramite";
     }
-
-    // =========================================================
-    // GESTIÓN DE PERFIL
-    // =========================================================
 
     @GetMapping("/cliente/perfil")
     public String verPerfil(HttpSession session, Model model) {
@@ -148,14 +130,6 @@ public class TramiteController {
         return "redirect:/cliente/dashboard?profileUpdated=true";
     }
 
-    // =========================================================
-    // ACCIONES DE TRÁMITE
-    // =========================================================
-
-    // =========================================================
-    // ACCIONES DE TRÁMITE (CORREGIDO)
-    // =========================================================
-
     @PostMapping("/abogado/actualizar-estado")
     public String actualizarEstado(@RequestParam("idCita") Long idCita,
                                    @RequestParam("nuevoEstado") String nuevoEstado,
@@ -172,7 +146,6 @@ public class TramiteController {
             throw new RuntimeException("El estado enviado '" + nuevoEstado + "' no es un estado válido.");
         }
 
-        // CORRECCIÓN: Guardamos la respuesta en el campo del abogado sin tocar el del cliente
         appointment.setLawyerNotes(comentario);
 
         appointmentRepository.save(appointment);
