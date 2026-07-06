@@ -26,6 +26,7 @@
         .header-doc h2 {
             font-size: 12pt;
             font-weight: normal;
+            text-transform: uppercase;
             margin: 0;
         }
         .lugar-fecha {
@@ -35,13 +36,8 @@
         }
         .cuerpo p {
             text-align: justify;
-            margin-bottom: 12pt;
-        }
-        .datos-parte {
-            margin: 14pt 0 14pt 24pt;
-        }
-        .datos-parte p {
-            margin: 4pt 0;
+            margin-bottom: 16pt;
+            text-indent: 1.25cm; /* Sangría formal para el inicio de los párrafos */
         }
         .firma-section {
             margin-top: 60pt;
@@ -60,7 +56,7 @@
             margin: 0 auto 6pt auto;
         }
         .firma-bloque p {
-            font-size: 10pt;
+            font-size: 11pt;
             margin: 2pt 0;
         }
         .ticket-ref {
@@ -80,67 +76,54 @@
     <h2>Persona Natural</h2>
 </div>
 
-<div class="lugar-fecha">
-    <span th:text="${lugarFecha}">San Isidro, 30 de junio de 2026</span>
-</div>
-
 <div class="cuerpo">
     <p>
-        Yo, <strong th:text="${repNombre}">NOMBRE DEL REPRESENTADO</strong>,
-        identificado(a) con DNI N° <strong th:text="${repDni}">00000000</strong>,
-        de estado civil <span th:text="${repEstadoCivil}">soltero(a)</span>,
-        de nacionalidad <span th:text="${repNacionalidad}">peruana</span>,
-        actuando en calidad de persona natural, por medio del presente documento
-        designo como mi representante legal a:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Representante:</strong> <span th:text="${apoNombre}">NOMBRE DEL REPRESENTANTE</span></p>
-        <p><strong>DNI N°:</strong> <span th:text="${apoDni}">00000000</span></p>
-    </div>
-
-    <p>
-        La presente representación se otorga de manera especial para que el representante
-        actúe en mi nombre y por mi cuenta en la siguiente gestión:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Gestión específica:</strong></p>
-        <p th:text="${gestion}">Descripción de la gestión específica a realizar.</p>
-    </div>
-
-    <p>
-        En virtud de la presente carta de representación, el representante queda
-        facultado para suscribir documentos, presentar escritos, gestionar trámites
-        administrativos y realizar todos los actos inherentes a la consecución del
-        encargo que por este instrumento se le confiere, en estricta observancia
-        de las normas legales vigentes.
+        Por medio de la presente, yo, <strong th:text="${repNombre}">[Nombre y Apellidos del Otorgante]</strong>,
+        identificado con DNI N° <strong th:text="${repDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${repEstadoCivil}">[Soltero/a, Casado/a...]</span> y con domicilio real establecido en
+        <span th:text="${repDomicilio}">[Dirección completa del Otorgante]</span>, declaro que otorgo poder de representación legal a
+        favor de <strong th:text="${apoNombre}">[Nombre y Apellidos del Apoderado]</strong>, identificado con DNI N°
+        <strong th:text="${apoDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${apoEstadoCivil}">[Soltero/a, Casado/a...]</span> y domiciliado en
+        <span th:text="${apoDomicilio}">[Dirección completa del Apoderado]</span>.
     </p>
 
     <p>
-        El representado declara bajo su responsabilidad que los datos consignados
-        son verídicos, y que el presente documento se extiende para los fines
-        legales que correspondan.
+        En virtud de este documento, el apoderado queda plenamente facultado para actuar
+        en mi nombre, derechos y acciones, asumiendo mi representación legal formal
+        para ejecutar la siguiente función: <span th:text="${gestion}">[Especificar aquí detalladamente la gestión...]</span>.
+        Para el correcto ejercicio de esta facultad, el representante legal podrá presentar escritos, interponer recursos,
+        firmar actas, asistir a comparecencias, recibir notificaciones oficiales y
+        realizar cualquier acto lícito indispensable para la protección de mis
+        intereses en el marco del trámite encomendado.
     </p>
 
-    <p th:if="${facultades != null and !#strings.isEmpty(facultades)}">
-        <strong>Facultades específicas otorgadas:</strong><br/>
-        <span th:text="${facultades}">Facultades detalladas.</span>
+    <p>
+        Las facultades aquí otorgadas se mantendrán vigentes de forma ininterrumpida desde
+        el momento de su suscripción hasta el <span th:text="${fechaVencimiento}">[Fecha de término]</span>, o bien hasta
+        que el procedimiento legal referenciado haya concluido en todas sus instancias.
+        Para constancia de lo acordado y en ejercicio pleno de mis facultades civiles,
+        firmo este instrumento.
     </p>
+</div>
+
+<div class="lugar-fecha">
+    San Isidro, <span th:text="${diaActual}">[Dia Actual]</span> de <span th:text="${mesPresente}">[Mes Presente]</span> del <span th:text="${anoActual}">[Año Actual]</span>.
 </div>
 
 <div class="firma-section">
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${repNombre}">REPRESENTADO</strong></p>
-        <p>DNI N° <span th:text="${repDni}">00000000</span></p>
-        <p>Representado</p>
+        <p><strong th:text="${repNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${repDni}">[Número de DNI]</span></p>
+        <p>Otorgante / Representado</p>
     </div>
+
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${apoNombre}">REPRESENTANTE</strong></p>
-        <p>DNI N° <span th:text="${apoDni}">00000000</span></p>
-        <p>Representante Legal</p>
+        <p><strong th:text="${apoNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${apoDni}">[Número de DNI]</span></p>
+        <p>Apoderado / Representante Legal</p>
     </div>
 </div>
 

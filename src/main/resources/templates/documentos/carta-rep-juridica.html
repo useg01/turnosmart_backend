@@ -26,6 +26,7 @@
         .header-doc h2 {
             font-size: 12pt;
             font-weight: normal;
+            text-transform: uppercase;
             margin: 0;
         }
         .lugar-fecha {
@@ -35,13 +36,14 @@
         }
         .cuerpo p {
             text-align: justify;
-            margin-bottom: 12pt;
+            margin-bottom: 16pt;
+            text-indent: 1.25cm; /* Sangría formal para cada sección */
         }
-        .datos-parte {
-            margin: 14pt 0 14pt 24pt;
-        }
-        .datos-parte p {
-            margin: 4pt 0;
+        .cuerpo p.clausula {
+            text-indent: 0;
+            font-weight: bold;
+            margin-bottom: 4pt;
+            margin-top: 14pt;
         }
         .firma-section {
             margin-top: 60pt;
@@ -60,7 +62,7 @@
             margin: 0 auto 6pt auto;
         }
         .firma-bloque p {
-            font-size: 10pt;
+            font-size: 11pt;
             margin: 2pt 0;
         }
         .ticket-ref {
@@ -80,68 +82,61 @@
     <h2>Persona Jurídica</h2>
 </div>
 
-<div class="lugar-fecha">
-    <span th:text="${lugarFecha}">San Isidro, 30 de junio de 2026</span>
+<div class="cuerpo">
+    <p class="clausula">PRIMERO: DE LAS PARTES</p>
+    <p>
+        Comparece mediante el presente instrumento, en calidad de Otorgante, el señor
+        <strong th:text="${repNombre}">[Nombre y Apellidos del Otorgante]</strong>, identificado con DNI N°
+        <strong th:text="${repDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${repEstadoCivil}">[Soltero/a, Casado/a...]</span> y con domicilio en
+        <span th:text="${repDomicilio}">[Dirección del Otorgante]</span>; quien actúa en su condición de
+        <span th:text="${repCargo}">[Cargo, ej: Gerente General / Apoderado Legal]</span> y en representación de la persona jurídica
+        <strong th:text="${razonSocial}">[Nombre o Razón Social de la Empresa]</strong>, inscrita en el registro de personas jurídicas con el número de identificación tributaria/registro
+        <strong th:text="${ruc}">[RUC / NIT / N° de Partida]</strong>. Asimismo, se designa como Apoderado al señor
+        <strong th:text="${apoNombre}">[Nombre y Apellidos del Apoderado]</strong>, identificado con DNI N°
+        <strong th:text="${apoDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${apoEstadoCivil}">[Soltero/a, Casado/a...]</span> y con domicilio en
+        <span th:text="${apoDomicilio}">[Dirección del Apoderado]</span>.
+    </p>
+
+    <p class="clausula">SEGUNDO: DE LAS FACULTADES CORPORATIVAS</p>
+    <p>
+        En el uso de las atribuciones legales y estatutarias que me han sido conferidas por la empresa antes mencionada,
+        otorgo poder especial de representación a favor del Apoderado para que actúe en nombre de la sociedad única y
+        exclusivamente en la siguiente gestión empresarial: <span th:text="${gestion}">[Especificar la función de la empresa...]</span>.
+    </p>
+
+    <p class="clausula">TERCERO: ALCANCE Y VIGENCIA</p>
+    <p>
+        Para el estricto cumplimiento de la función gestionada, el Apoderado gozará de la potestad de suscribir
+        documentación institucional, presentar declaraciones juradas, convalidar acuerdos comerciales de la materia y
+        realizar trámites ante organismos públicos o privados en representación de la persona jurídica. Este poder especial
+        corporativo iniciará sus efectos en la fecha de su firma y caducará de forma automática el
+        <span th:text="${fechaVencimiento}">[Fecha de vencimiento]</span>.
+    </p>
+
+    <p>
+        Para la validez de este acto jurídico, firman las partes involucradas.
+    </p>
 </div>
 
-<div class="cuerpo">
-    <p>
-        La empresa <strong th:text="${razonSocial}">RAZÓN SOCIAL S.A.C.</strong>,
-        identificada con RUC N° <strong th:text="${ruc}">00000000000</strong>,
-        debidamente representada por <strong th:text="${repNombre}">NOMBRE DEL REPRESENTANTE LEGAL</strong>,
-        identificado(a) con DNI N° <strong th:text="${repDni}">00000000</strong>,
-        en calidad de representante legal, por medio del presente documento
-        designa como su apoderado a:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Apoderado:</strong> <span th:text="${apoNombre}">NOMBRE DEL APODERADO</span></p>
-        <p><strong>DNI N°:</strong> <span th:text="${apoDni}">00000000</span></p>
-    </div>
-
-    <p>
-        La presente representación se otorga de manera especial para que el apoderado
-        actúe en nombre de la empresa y por su cuenta en la siguiente gestión:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Gestión específica:</strong></p>
-        <p th:text="${gestion}">Descripción de la gestión específica a realizar.</p>
-    </div>
-
-    <p>
-        En virtud de la presente carta de representación, el apoderado queda
-        facultado para suscribir documentos, presentar escritos, gestionar trámites
-        administrativos ante las instituciones correspondientes y realizar todos los
-        actos inherentes a la consecución del encargo conferido, actuando en
-        estricta observancia del objeto social de la empresa y las normas legales
-        vigentes en la República del Perú.
-    </p>
-
-    <p th:if="${facultades != null and !#strings.isEmpty(facultades)}">
-        <strong>Facultades específicas otorgadas:</strong><br/>
-        <span th:text="${facultades}">Facultades detalladas.</span>
-    </p>
-
-    <p>
-        La empresa declara bajo responsabilidad que los datos consignados son
-        verídicos y que el presente documento se extiende para los fines legales
-        que correspondan.
-    </p>
+<div class="lugar-fecha">
+    San Isidro, <span th:text="${diaActual}">[Dia Actual]</span> de <span th:text="${mesPresente}">[Mes Presente]</span> del <span th:text="${anoActual}">[Año Actual]</span>.
 </div>
 
 <div class="firma-section">
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${repNombre}">REPRESENTANTE LEGAL</strong></p>
-        <p>DNI N° <span th:text="${repDni}">00000000</span></p>
-        <p th:text="${razonSocial}">EMPRESA S.A.C.</p>
+        <p><strong th:text="${repNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${repDni}">[Número de DNI]</span></p>
+        <p>El Otorgante</p>
     </div>
+
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${apoNombre}">APODERADO</strong></p>
-        <p>DNI N° <span th:text="${apoDni}">00000000</span></p>
-        <p>Apoderado</p>
+        <p><strong th:text="${apoNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${apoDni}">[Número de DNI]</span></p>
+        <p>El Apoderado</p>
     </div>
 </div>
 

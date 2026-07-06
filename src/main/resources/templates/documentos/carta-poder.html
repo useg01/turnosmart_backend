@@ -35,13 +35,8 @@
         }
         .cuerpo p {
             text-align: justify;
-            margin-bottom: 12pt;
-        }
-        .datos-parte {
-            margin: 14pt 0 14pt 24pt;
-        }
-        .datos-parte p {
-            margin: 4pt 0;
+            margin-bottom: 16pt;
+            text-indent: 1.25cm; /* Sangría clásica para documentos formales */
         }
         .firma-section {
             margin-top: 60pt;
@@ -60,7 +55,7 @@
             margin: 0 auto 6pt auto;
         }
         .firma-bloque p {
-            font-size: 10pt;
+            font-size: 11pt;
             margin: 2pt 0;
         }
         .ticket-ref {
@@ -76,64 +71,56 @@
 <body>
 
 <div class="header-doc">
-    <h1>Carta Poder</h1>
+    <h1>Carta de Poder</h1>
     <p>Documento Notarial de Gestión de Poderes</p>
-</div>
-
-<div class="lugar-fecha">
-    <span th:text="${lugarFecha}">San Isidro, 30 de junio de 2026</span>
 </div>
 
 <div class="cuerpo">
     <p>
-        Yo, <strong th:text="${repNombre}">NOMBRE DEL OTORGANTE</strong>,
-        identificado(a) con DNI N° <strong th:text="${repDni}">00000000</strong>,
-        de estado civil <span th:text="${repEstadoCivil}">soltero(a)</span>,
-        de nacionalidad <span th:text="${repNacionalidad}">peruana</span>,
-        mediante la presente carta poder, otorgo de manera voluntaria y expresa poder
-        a favor de:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Apoderado:</strong> <span th:text="${apoNombre}">NOMBRE DEL APODERADO</span></p>
-        <p><strong>DNI N°:</strong> <span th:text="${apoDni}">00000000</span></p>
-    </div>
-
-    <p>
-        Para que en mi nombre y representación, con todas las facultades que el presente
-        poder le confiere, realice la siguiente gestión:
-    </p>
-
-    <div class="datos-parte">
-        <p><strong>Gestión específica:</strong></p>
-        <p th:text="${gestion}">Descripción de la gestión específica a realizar.</p>
-    </div>
-
-    <p>
-        El presente poder es otorgado de manera especial y se limita exclusivamente a
-        las gestiones descritas anteriormente. El apoderado queda facultado para
-        suscribir documentos, presentar solicitudes, realizar trámites y en general
-        ejecutar todos los actos necesarios para el cumplimiento del encargo conferido.
+        Por el presente documento, yo, <strong th:text="${repNombre}">[Nombre y Apellidos del Otorgante]</strong>,
+        identificado con DNI N° <strong th:text="${repDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${repEstadoCivil}">[Soltero/a, Casado/a...]</span> y con domicilio ubicado en
+        <span th:text="${repDomicilio}">[Dirección completa del Otorgante]</span>, otorgo poder simple, amplio y suficiente a favor
+        de <strong th:text="${apoNombre}">[Nombre y Apellidos del Apoderado]</strong>, identificado con DNI N°
+        <strong th:text="${apoDni}">[Número de DNI]</strong>, de estado civil
+        <span th:text="${apoEstadoCivil}">[Soltero/a, Casado/a...]</span> y con domicilio en
+        <span th:text="${apoDomicilio}">[Dirección completa del Apoderado]</span>.
     </p>
 
     <p>
-        El poderdante declara que los datos consignados son verídicos y que el presente
-        documento se extiende para los fines legales que correspondan.
+        El apoderado queda expresamente facultado para que, en mi nombre y representación,
+        realice la siguiente gestión: <span th:text="${gestion}">[Especificar detalladamente aquí la función a gestionar, por ejemplo: el retiro de documentos, trámites vehiculares, solicitudes administrativas, etc.]</span>.
+        Para el correcto cumplimiento de este encargo, el apoderado podrá firmar solicitudes, presentar documentación,
+        recibir notificaciones y realizar cualquier acto administrativo necesario ante las entidades correspondientes,
+        única y exclusivamente para el fin antes mencionado.
     </p>
+
+    <p>
+        Este poder tendrá una vigencia válida desde la fecha de su firma hasta el
+        <span th:text="${fechaVencimiento}">[Fecha de vencimiento, ejemplo: 31 de diciembre de 2026]</span> o, en su defecto, hasta
+        la total culminación del trámite específico aquí detallado. En señal de plena
+        conformidad con los términos expresados en este documento, se procede a firmar
+        la presente carta de poder.
+    </p>
+</div>
+
+<div class="lugar-fecha">
+    San Isidro, <span th:text="${diaActual}">[Dia Actual]</span> de <span th:text="${mesPresente}">[Mes Presente]</span> del <span th:text="${anoActual}">[Año Actual]</span>.
 </div>
 
 <div class="firma-section">
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${repNombre}">OTORGANTE</strong></p>
-        <p>DNI N° <span th:text="${repDni}">00000000</span></p>
-        <p>Otorgante del Poder</p>
+        <p><strong th:text="${apoNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${apoDni}">[Número de DNI]</span></p>
+        <p>El Apoderado</p>
     </div>
+
     <div class="firma-bloque">
         <div class="firma-linea"></div>
-        <p><strong th:text="${apoNombre}">APODERADO</strong></p>
-        <p>DNI N° <span th:text="${apoDni}">00000000</span></p>
-        <p>Apoderado</p>
+        <p><strong th:text="${repNombre}">[Nombre y Apellidos]</strong></p>
+        <p>DNI N°: <span th:text="${repDni}">[Número de DNI]</span></p>
+        <p>El Otorgante</p>
     </div>
 </div>
 
