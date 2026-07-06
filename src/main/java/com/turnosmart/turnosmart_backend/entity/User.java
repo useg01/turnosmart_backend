@@ -42,14 +42,18 @@ public class User {
     @Column(length = 20)
     private String phone;
 
+    // Representa la columna física real en MySQL
     @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    // Temporal para capturar contraseñas en formularios (Ignorado por la Base de Datos)
+    @Transient
     private String password;
 
     @Builder.Default
     @Column(nullable = false)
     private Boolean enabled = true;
 
-    // MODIFICACIÓN DE SEGURIDAD: Control de intentos para evitar ataques de fuerza bruta
     @Builder.Default
     @Column(name = "failed_attempts", nullable = false)
     private Integer failedAttempts = 0;

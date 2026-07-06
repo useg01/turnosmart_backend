@@ -27,6 +27,7 @@ public class AuthService {
         if (userRepository.existsByDni(user.getDni())) {
             throw new RuntimeException("El DNI ingresado ya se encuentra registrado.");
         }
+
         if (user.getPassword() == null || user.getPassword().trim().length() < 8) {
             throw new RuntimeException("La contraseña es muy corta. Debe contener un mínimo de 8 caracteres.");
         }
@@ -36,6 +37,9 @@ public class AuthService {
 
         user.setSingleRole(defaultRole);
 
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPasswordHash(encodedPassword);
+
         userService.register(user);
     }
 
@@ -43,31 +47,26 @@ public class AuthService {
         Optional<User> userOpt = userRepository.findByEmail(email);
 
         if (userOpt.isEmpty()) {
-            return false; // Si el correo no existe, no hacemos nada más
+            return false;
         }
 
         User user = userOpt.get();
 
-        // 1. CONTROL DE SEGURIDAD: Si ya superó los intentos, la cuenta está bloqueada
         if (user.getAccountLocked() != null && user.getAccountLocked()) {
             throw new RuntimeException("La cuenta se encuentra bloqueada por superar el límite de 3 intentos fallidos.");
         }
 
-        // 2. VERIFICACIÓN DE CREDENCIALES
-        if (passwordEncoder.matches(password, user.getPassword())) {
-            // Si la clave es correcta y tenía intentos acumulados, los limpiamos a 0
+        if (passwordEncoder.matches(password.trim(), user.getPasswordHash().trim())) {
             if (user.getFailedAttempts() == null || user.getFailedAttempts() > 0) {
                 user.setFailedAttempts(0);
                 userRepository.save(user);
             }
             return true;
         } else {
-            // Si la clave es incorrecta, sumamos un intento fallido
             int currentAttempts = (user.getFailedAttempts() != null) ? user.getFailedAttempts() : 0;
             currentAttempts++;
             user.setFailedAttempts(currentAttempts);
 
-            // Si llega a 3 intentos incorrectos, bloqueamos la cuenta por completo
             if (currentAttempts >= 3) {
                 user.setAccountLocked(true);
                 userRepository.save(user);

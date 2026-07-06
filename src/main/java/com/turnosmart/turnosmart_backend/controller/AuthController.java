@@ -1,6 +1,5 @@
 package com.turnosmart.turnosmart_backend.controller;
 
-import com.turnosmart.turnosmart_backend.entity.Role;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.service.AuthService;
 import com.turnosmart.turnosmart_backend.service.UserService;
@@ -33,7 +32,6 @@ public class AuthController {
                               HttpSession session,
                               Model model) {
         try {
-            // 1. MODIFICACIÓN DE SEGURIDAD: Usamos la lógica centralizada de autenticación (valida hash y cuenta intentos)
             boolean isAuthenticated = authService.authenticate(email, password);
 
             if (isAuthenticated) {
@@ -68,12 +66,10 @@ public class AuthController {
                 };
             }
 
-            // Si retorna false sin lanzar excepción, son credenciales incorrectas estándar
             model.addAttribute("error", "Credenciales incorrectas o usuario no encontrado");
             return "login";
 
         } catch (RuntimeException e) {
-            // 2. MODIFICACIÓN DE SEGURIDAD: Captura los mensajes de RuntimeException enviados por AuthService (como el bloqueo de cuenta)
             model.addAttribute("error", e.getMessage());
             return "login";
         }

@@ -16,7 +16,6 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    // El constructor recibe de forma segura el codificador inyectado por Spring
     public UserService(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -43,7 +42,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dni + " no encontrado"));
     }
 
-    // Corregido: Mantiene el parámetro 'email' de tu código original para evitar errores
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -58,8 +56,10 @@ public class UserService {
             throw new RuntimeException("El correo ya está registrado");
         }
 
-        // MODIFICACIÓN DE SEGURIDAD: Hasheo de la contraseña antes de guardar en DB
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // CORREGIDO: Guarda el hash de forma consistente usando setPasswordHash
+        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(user.getPassword()));
+        }
 
         Role clienteRole = roleRepository.findByName("ROLE_CLIENTE")
                 .orElseThrow(() -> new RuntimeException("Error: El rol ROLE_CLIENTE no existe en la DB"));
