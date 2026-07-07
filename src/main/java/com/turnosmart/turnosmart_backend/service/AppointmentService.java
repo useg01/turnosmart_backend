@@ -99,9 +99,6 @@ public class AppointmentService {
         app.setOperationNumber(codigoIngresado);
         app.setIsPaid(true);
 
-        // =========================================================================
-        // CONSTRUCCIÓN DE LA HOJA INFORMATIVA COMPLETA (TEXTO PLANO)
-        // =========================================================================
         StringBuilder sb = new StringBuilder();
         sb.append("========================================================\n");
         sb.append("           EXPEDIENTE DETALLADO DE SOLICITUD            \n");
@@ -212,16 +209,6 @@ public class AppointmentService {
                 .orElseThrow(() -> new BusinessException("No se encontró el trámite con ticket: " + ticket));
     }
 
-    /**
-     * Sube los 4 documentos obligatorios del cliente:
-     *   - DNI del Otorgante
-     *   - Recibo de Agua/Luz del Otorgante
-     *   - DNI del Representante
-     *   - Recibo de Agua/Luz del Representante
-     *
-     * Cada archivo se guarda físicamente vía FileService y se registra como
-     * AppointmentDocument con su fileType específico. Permite resubida posterior.
-     */
     @Transactional
     public void uploadDocuments(Long appointmentId,
                                 MultipartFile fileDniOtorgante,
@@ -253,11 +240,6 @@ public class AppointmentService {
                 "El cliente adjuntó los documentos del Otorgante y del Representante.", userId);
     }
 
-    /**
-     * Guarda un archivo PDF físicamente y crea su registro AppointmentDocument.
-     * El fileUrl usa ruta relativa web (/uploads/tramites/...) que Spring sirve
-     * como recurso estático gracias a WebConfig.addResourceHandlers.
-     */
     private void guardarDocumento(Appointment app, MultipartFile file, String fileType) {
         String nombreArchivo = fileService.save(file, app.getTicketNumber() + "_" + fileType);
         AppointmentDocument doc = new AppointmentDocument();

@@ -62,12 +62,6 @@ public class Appointment {
     @Column(columnDefinition = "TEXT")
     private String lawyerNotes;
 
-    /**
-     * Respuesta/observación que el cliente redacta al "Subsanar" un trámite
-     * que el especialista marcó como REGULARIZAR / PROCESO_DETENIDO.
-     * Se guarda separado de clientNotes para no mezclarse con el parser
-     * de "Facultades Especiales Otorgadas" en las vistas del abogado.
-     */
     @Column(columnDefinition = "TEXT")
     private String clientObservation;
 
@@ -82,10 +76,7 @@ public class Appointment {
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AppointmentDocument> documents = new ArrayList<>();
 
-    /**
-     * Ruta del PDF de carta legal generado automáticamente al aprobar los documentos.
-     * Sirve tanto al cliente (para descargarlo) como al abogado/admin para consulta.
-     */
+
     @Column(columnDefinition = "TEXT")
     private String cartaGeneradaUrl;
 
