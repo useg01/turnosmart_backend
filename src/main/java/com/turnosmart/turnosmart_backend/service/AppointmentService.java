@@ -133,7 +133,6 @@ public class AppointmentService {
             sb.append("· Correo Electrónico: ").append(dto.getApoCorreo() != null ? dto.getApoCorreo() : "No declarado").append("\n");
             sb.append("· Teléfono / Celular: ").append(dto.getApoTelefono() != null ? dto.getApoTelefono() : "No registrado").append("\n");
             sb.append("· Dirección de Residencia: ").append(dto.getApoDireccion() != null ? dto.getApoDireccion() : "No registrada").append("\n");
-            sb.append("· Facultades: ").append(dto.getApoFacultades() != null ? dto.getApoFacultades() : "No se especificaron facultades").append("\n");
             sb.append("========================================================\n");
         }
 
