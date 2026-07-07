@@ -177,7 +177,6 @@
             <p class="text-muted">Gestiona tus trámites y turnos notariales desde un solo lugar.</p>
         </div>
 
-        <!-- Se cambió a col-md-6 para cubrir el espacio del catálogo eliminado -->
         <div class="col-md-6 mb-4">
             <a th:href="@{/appointments/crear}" class="action-card">
                 <div class="action-icon" style="background: #ecfdf5; color: #10b981;"><i class="bi bi-plus-lg"></i></div>
@@ -186,7 +185,6 @@
             </a>
         </div>
 
-        <!-- Se cambió a col-md-6 para equilibrar la fila perfectamente -->
         <div class="col-md-6 mb-4">
             <a th:href="@{/cliente/perfil}" class="action-card">
                 <div class="action-icon" style="background: #eff6ff; color: #2563eb;">
@@ -281,7 +279,7 @@
             </div>
 
             <div th:if="${t.status.name() == 'REVISION' or t.status.name() == 'REGULARIZAR' or t.status.name() == 'PROCESO_DETENIDO' or t.status.name() == 'CONFORME'}" class="modal fade" th:id="'modalUpload' + ${t.id}" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header border-0 pb-0">
                             <h5 class="modal-title fw-bold fs-4">Adjuntar Documentos</h5>
@@ -289,20 +287,50 @@
                         </div>
                         <form th:action="@{/api/documents/upload/{id}(id=${t.id})}" method="post" enctype="multipart/form-data">
                             <div class="modal-body p-4">
-                                <div class="p-3 bg-light rounded-4 text-center border-2 border-dashed mb-4" style="border: 2px dashed #cbd5e1;">
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger display-4"></i>
-                                    <p class="mt-2 mb-0 fw-bold">Sube tus archivos PDF aquí</p>
-                                    <p class="x-small text-muted">Trámite ref: <span th:text="${t.ticketNumber}"></span></p>
+                                <div class="p-3 bg-light rounded-4 text-center mb-4" style="border: 2px dashed #cbd5e1;">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
+                                    <p class="mt-2 mb-0 fw-bold">Sube los documentos en formato PDF</p>
+                                    <p class="small text-muted mb-0">Trámite ref: <span th:text="${t.ticketNumber}"></span></p>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">DNI (PDF)</label>
-                                    <input type="file" name="fileDni" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 border h-100" style="background-color: #f0f9ff; border-color: #bae6fd !important;">
+                                            <h6 class="fw-bold text-primary mb-3">
+                                                <i class="bi bi-person-fill-gear me-1"></i> Documentos del Otorgante
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">DNI (PDF)</label>
+                                                <input type="file" name="fileDniOtorgante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                            <div class="mb-1">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">Recibo de Agua o Luz (PDF)</label>
+                                                <input type="file" name="fileReciboOtorgante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 border h-100" style="background-color: #f0fdf4; border-color: #bbf7d0 !important;">
+                                            <h6 class="fw-bold text-success mb-3">
+                                                <i class="bi bi-person-fill-check me-1"></i> Documentos del Representante
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">DNI (PDF)</label>
+                                                <input type="file" name="fileDniRepresentante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                            <div class="mb-1">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">Recibo de Agua o Luz (PDF)</label>
+                                                <input type="file" name="fileReciboRepresentante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Recibo de Agua o Luz (PDF)</label>
-                                    <input type="file" name="fileRecibo" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+
+                                <div class="form-text small mt-3">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Los 4 documentos son obligatorios. Si ya los habías subido antes, al volver a enviarlos se actualizarán.
                                 </div>
-                                <div class="form-text x-small">Ambos documentos son obligatorios. Si ya los habías subido antes, al volver a enviarlos se actualizarán.</div>
                             </div>
                             <div class="modal-footer border-0 pt-0">
                                 <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>

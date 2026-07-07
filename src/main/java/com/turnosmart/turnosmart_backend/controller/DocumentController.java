@@ -18,26 +18,35 @@ public class DocumentController {
     private final AppointmentService appointmentService;
 
     @PostMapping("/upload/{id}")
-    public String handleFileUpload(@PathVariable Long id,
-                                   @RequestParam("fileDni") MultipartFile fileDni,
-                                   @RequestParam("fileRecibo") MultipartFile fileRecibo,
-                                   HttpSession session,
-                                   RedirectAttributes redirectAttributes) {
+    public String handleFileUpload(
+            @PathVariable Long id,
+            @RequestParam("fileDniOtorgante")      MultipartFile fileDniOtorgante,
+            @RequestParam("fileReciboOtorgante")   MultipartFile fileReciboOtorgante,
+            @RequestParam("fileDniRepresentante")  MultipartFile fileDniRepresentante,
+            @RequestParam("fileReciboRepresentante") MultipartFile fileReciboRepresentante,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
         User loggedUser = (User) session.getAttribute("loggedUser");
-
-        if (loggedUser == null) {
-            return "redirect:/login";
-        }
+        if (loggedUser == null) return "redirect:/login";
 
         try {
-            appointmentService.uploadDocuments(id, fileDni, fileRecibo, loggedUser.getId());
+            appointmentService.uploadDocuments(
+                    id,
+                    fileDniOtorgante,
+                    fileReciboOtorgante,
+                    fileDniRepresentante,
+                    fileReciboRepresentante,
+                    loggedUser.getId());
 
-            redirectAttributes.addFlashAttribute("successMessage", "Documentos (DNI y Recibo) cargados correctamente.");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Documentos cargados correctamente.");
+
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al subir documentos: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al subir documentos: " + e.getMessage());
         }
 
         return "redirect:/cliente/dashboard";

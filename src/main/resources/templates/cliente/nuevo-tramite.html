@@ -177,7 +177,7 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Descripción General del Requerimiento</label>
+                            <label class="form-label">Gestión específica</label>
                             <textarea th:field="*{notes}" id="txtMainNotes" class="form-control" rows="3" placeholder="Detalle los requerimientos generales de la atención..." required></textarea>
                         </div>
 
@@ -212,7 +212,6 @@
                         <input type="hidden" th:field="*{apoDni}" id="hApoDni">
                         <input type="hidden" th:field="*{apoNombres}" id="hApoNombres">
                         <input type="hidden" th:field="*{apoApellidos}" id="hApoApellidos">
-                        <input type="hidden" th:field="*{apoFacultades}" id="hApoFacultades">
 
                         <!-- ============================ -->
                         <!-- SECCIÓN DE PAGO (OBLIGATORIA) -->
@@ -356,10 +355,6 @@
                         <label class="form-label text-secondary small">Apellidos</label>
                         <input type="text" id="mApoApellidos" class="form-control" placeholder="Apellidos completos">
                     </div>
-                    <div class="col-12">
-                        <label class="form-label text-secondary small">Facultades específicas a otorgar</label>
-                        <textarea id="mApoFacultades" class="form-control" rows="4" placeholder="Escriba detalladamente los poderes que se le confieren al apoderado..."></textarea>
-                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-light rounded-bottom-4">
@@ -402,17 +397,15 @@
         const dni = document.getElementById('mApoDni').value;
         const nom = document.getElementById('mApoNombres').value;
         const ape = document.getElementById('mApoApellidos').value;
-        const fac = document.getElementById('mApoFacultades').value;
 
-        if(!dni || !nom || !ape || !fac) {
-            alert("Por favor rellene todos los campos (DNI, Nombres, Apellidos y Facultades).");
+        if(!dni || !nom || !ape) {
+            alert("Por favor rellene todos los campos (DNI, Nombres y Apellidos).");
             return;
         }
 
         document.getElementById('hApoDni').value = dni;
         document.getElementById('hApoNombres').value = nom;
         document.getElementById('hApoApellidos').value = ape;
-        document.getElementById('hApoFacultades').value = fac;
 
         document.getElementById('summaryApoderado').innerHTML = `<span class="text-success fw-semibold"><i class="bi bi-check-circle-fill"></i> Registrado: ${nom} ${ape} (${dni})</span>`;
         document.getElementById('iconCheckApo').className = "bi bi-check-circle-fill text-success";

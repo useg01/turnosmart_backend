@@ -153,12 +153,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="bg-white p-3 rounded border">
-                                        <small class="text-primary d-block mb-1 fw-bold"><i class="bi bi-shield-shaded me-1"></i> Facultades Especiales Otorgadas:</small>
-                                        <p class="text-dark fw-medium mb-0 small" style="white-space: pre-wrap; line-height: 1.4;" id="lblApoFacultades">
-                                            Cargando facultades...
-                                        </p>
-                                    </div>
                                 </div>
                             </div>
 
@@ -200,7 +194,7 @@
 
                         <div th:if="${expediente.status.name() != 'DOCUMENTOS_ENVIADOS'}">
                             <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-check text-success me-1"></i> Dictamen Técnico Legal</h6>
-                            <p class="text-muted small mb-4">Analice las facultades declaradas. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
+                            <p class="text-muted small mb-4">Analice el expediente declarado. Si todo es correcto apruebe el flujo, en caso contrario detalle la observación y detenga el expediente.</p>
 
                             <form th:action="@{/abogado/tramite/evaluar/{id}(id=${expediente.id})}" method="post">
                                 <div class="mb-4">
@@ -339,7 +333,11 @@
         }
 
         const textoFinalFacultades = capturarFacultades.join("\n").trim();
-        document.getElementById("lblApoFacultades").innerText = textoFinalFacultades ? textoFinalFacultades : "Facultad General de Representación sobre actos notariales y administrativos de forma Conforme.";
+        // Se preserva la asignación para evitar errores de referencia JS, aunque el elemento ya no se renderice en el DOM.
+        const elFacultades = document.getElementById("lblApoFacultades");
+        if (elFacultades) {
+            elFacultades.innerText = textoFinalFacultades ? textoFinalFacultades : "Facultad General de Representación sobre actos notariales y administrativos de forma Conforme.";
+        }
     });
 
     function validarYDetener() {

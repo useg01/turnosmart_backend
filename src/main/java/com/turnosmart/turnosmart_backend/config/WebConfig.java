@@ -3,6 +3,7 @@ package com.turnosmart.turnosmart_backend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -13,29 +14,25 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final SecurityInterceptor securityInterceptor;
 
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(securityInterceptor)
                 .addPathPatterns("/admin/**", "/abogado/**", "/cliente/**");
     }
 
-    /**
-     * Expone la carpeta física donde FileService guarda los PDFs (DNI, recibos, etc.)
-     * como recurso estático accesible vía /uploads/tramites/{archivo}.pdf
-     * Esto permite que el abogado/admin pueda abrir o descargar los documentos
-     * que el cliente sube desde el dashboard.
-     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String workingDir = System.getProperty("user.dir");
+
         registry.addResourceHandler("/uploads/tramites/**")
-                .addResourceLocations("file:uploads/tramites/");
+                .addResourceLocations("file:" + workingDir + "/uploads/tramites/");
 
         registry.addResourceHandler("/uploads/cartas/**")
-                .addResourceLocations("file:uploads/cartas/");
-    }
-
-    @Bean
-    public org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
-        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+                .addResourceLocations("file:" + workingDir + "/uploads/cartas/");
     }
 }
