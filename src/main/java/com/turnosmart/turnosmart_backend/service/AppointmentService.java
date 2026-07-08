@@ -133,6 +133,7 @@ public class AppointmentService {
             sb.append("· Correo Electrónico: ").append(dto.getApoCorreo() != null ? dto.getApoCorreo() : "No declarado").append("\n");
             sb.append("· Teléfono / Celular: ").append(dto.getApoTelefono() != null ? dto.getApoTelefono() : "No registrado").append("\n");
             sb.append("· Dirección de Residencia: ").append(dto.getApoDireccion() != null ? dto.getApoDireccion() : "No registrada").append("\n");
+            sb.append("· Facultades: ").append(dto.getApoFacultades() != null ? dto.getApoFacultades() : "No se especificaron facultades").append("\n");
             sb.append("========================================================\n");
         }
 
@@ -179,6 +180,42 @@ public class AppointmentService {
 
         registrarLog(app, estadoAnterior, AppointmentStatus.REVISION.name(),
                 "Cliente envió subsanación: " + clientObservation, clientUserId);
+    }
+
+    @Transactional
+    public void subsanarConDocumentos(Long appointmentId,
+                                      MultipartFile fileDniOtorgante,
+                                      MultipartFile fileReciboOtorgante,
+                                      MultipartFile fileDniRepresentante,
+                                      MultipartFile fileReciboRepresentante,
+                                      Long userId) {
+
+        Appointment app = appointmentRepo.findById(appointmentId)
+                .orElseThrow(() -> new BusinessException("Trámite no encontrado."));
+
+        if (app.getStatus() != AppointmentStatus.REGULARIZAR
+                && app.getStatus() != AppointmentStatus.PROCESO_DETENIDO) {
+            throw new BusinessException("Solo se puede subsanar un trámite en estado 'Observado'.");
+        }
+
+        if (fileDniOtorgante == null || fileDniOtorgante.isEmpty()
+                || fileReciboOtorgante == null || fileReciboOtorgante.isEmpty()
+                || fileDniRepresentante == null || fileDniRepresentante.isEmpty()
+                || fileReciboRepresentante == null || fileReciboRepresentante.isEmpty()) {
+            throw new BusinessException("Debe adjuntar los 4 documentos corregidos en formato PDF.");
+        }
+
+        guardarDocumento(app, fileDniOtorgante,        "DNI_OTORGANTE");
+        guardarDocumento(app, fileReciboOtorgante,     "RECIBO_OTORGANTE");
+        guardarDocumento(app, fileDniRepresentante,    "DNI_REPRESENTANTE");
+        guardarDocumento(app, fileReciboRepresentante, "RECIBO_REPRESENTANTE");
+
+        String estadoAnterior = app.getStatus().name();
+        app.setStatus(AppointmentStatus.DOCUMENTOS_ENVIADOS);
+        appointmentRepo.save(app);
+
+        registrarLog(app, estadoAnterior, AppointmentStatus.DOCUMENTOS_ENVIADOS.name(),
+                "Cliente envió documentos corregidos como subsanación.", userId);
     }
 
     public List<Appointment> findByClient(Long clientId) {
@@ -238,6 +275,7 @@ public class AppointmentService {
         registrarLog(app, estadoAnterior, AppointmentStatus.DOCUMENTOS_ENVIADOS.name(),
                 "El cliente adjuntó los documentos del Otorgante y del Representante.", userId);
     }
+
 
     private void guardarDocumento(Appointment app, MultipartFile file, String fileType) {
         String nombreArchivo = fileService.save(file, app.getTicketNumber() + "_" + fileType);

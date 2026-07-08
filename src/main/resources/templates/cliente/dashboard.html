@@ -346,29 +346,77 @@
             </div>
 
             <div th:if="${t.status.name() == 'REGULARIZAR' or t.status.name() == 'PROCESO_DETENIDO'}" class="modal fade" th:id="'modalSubsanar' + ${t.id}" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header border-0 pb-0">
                             <h5 class="modal-title fw-bold fs-4">Subsanar Observación</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <form th:action="@{/appointments/api/tramites/subsanar/{id}(id=${t.id})}" method="post">
+                        <form th:action="@{/api/documents/subsanar/{id}(id=${t.id})}" method="post" enctype="multipart/form-data">
                             <div class="modal-body p-4">
-                                <div th:if="${t.lawyerNotes != null and t.lawyerNotes != ''}" class="p-3 rounded-4 mb-4 small" style="background-color: #fef2f2; border: 1px solid #fecaca;">
-                                    <p class="mb-1 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> Motivo indicado por el Especialista:</p>
+
+                                <div th:if="${t.lawyerNotes != null and t.lawyerNotes != ''}"
+                                     class="p-3 rounded-4 mb-4 small" style="background-color: #fef2f2; border: 1px solid #fecaca;">
+                                    <p class="mb-1 fw-bold text-danger">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Motivo indicado por el Especialista:
+                                    </p>
                                     <span class="text-muted" th:text="${t.lawyerNotes}">Observación...</span>
                                 </div>
 
-                                <p class="text-muted small">Describe cómo subsanaste la observación para el Ticket <strong th:text="${t.ticketNumber}"></strong>. El especialista revisará tu respuesta.</p>
+                                <p class="text-muted small mb-4">
+                                    Sube los documentos corregidos para el Ticket
+                                    <strong th:text="${t.ticketNumber}"></strong>.
+                                    El especialista revisará los nuevos archivos.
+                                </p>
 
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Observación / Respuesta</label>
-                                    <textarea name="clientObservation" class="form-control rounded-3" rows="4" placeholder="Escribe aquí el detalle de la subsanación..." required></textarea>
+                                <div class="p-3 bg-light rounded-4 text-center mb-4" style="border: 2px dashed #cbd5e1;">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
+                                    <p class="mt-2 mb-0 fw-bold">Sube los documentos corregidos en PDF</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 border h-100" style="background-color: #f0f9ff; border-color: #bae6fd !important;">
+                                            <h6 class="fw-bold text-primary mb-3">
+                                                <i class="bi bi-person-fill-gear me-1"></i> Documentos del Otorgante
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">DNI (PDF)</label>
+                                                <input type="file" name="fileDniOtorgante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                            <div>
+                                                <label class="form-label small fw-bold text-muted text-uppercase">Recibo de Agua o Luz (PDF)</label>
+                                                <input type="file" name="fileReciboOtorgante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-4 border h-100" style="background-color: #f0fdf4; border-color: #bbf7d0 !important;">
+                                            <h6 class="fw-bold text-success mb-3">
+                                                <i class="bi bi-person-fill-check me-1"></i> Documentos del Representante
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-muted text-uppercase">DNI (PDF)</label>
+                                                <input type="file" name="fileDniRepresentante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                            <div>
+                                                <label class="form-label small fw-bold text-muted text-uppercase">Recibo de Agua o Luz (PDF)</label>
+                                                <input type="file" name="fileReciboRepresentante" class="form-control rounded-3" accept=".pdf,application/pdf" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-text small mt-3">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Los 4 documentos son obligatorios. Reemplazarán los archivos anteriores.
                                 </div>
                             </div>
                             <div class="modal-footer border-0 pt-0">
                                 <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">Enviar</button>
+                                <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
+                                    <i class="bi bi-send-fill me-1"></i> Enviar Subsanación
+                                </button>
                             </div>
                         </form>
                     </div>

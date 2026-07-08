@@ -20,9 +20,9 @@ public class DocumentController {
     @PostMapping("/upload/{id}")
     public String handleFileUpload(
             @PathVariable Long id,
-            @RequestParam("fileDniOtorgante")      MultipartFile fileDniOtorgante,
-            @RequestParam("fileReciboOtorgante")   MultipartFile fileReciboOtorgante,
-            @RequestParam("fileDniRepresentante")  MultipartFile fileDniRepresentante,
+            @RequestParam("fileDniOtorgante")        MultipartFile fileDniOtorgante,
+            @RequestParam("fileReciboOtorgante")     MultipartFile fileReciboOtorgante,
+            @RequestParam("fileDniRepresentante")    MultipartFile fileDniRepresentante,
             @RequestParam("fileReciboRepresentante") MultipartFile fileReciboRepresentante,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -32,23 +32,43 @@ public class DocumentController {
 
         try {
             appointmentService.uploadDocuments(
-                    id,
-                    fileDniOtorgante,
-                    fileReciboOtorgante,
-                    fileDniRepresentante,
-                    fileReciboRepresentante,
+                    id, fileDniOtorgante, fileReciboOtorgante,
+                    fileDniRepresentante, fileReciboRepresentante,
                     loggedUser.getId());
-
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Documentos cargados correctamente.");
-
+            redirectAttributes.addFlashAttribute("successMessage", "Documentos cargados correctamente.");
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Error al subir documentos: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al subir documentos: " + e.getMessage());
         }
+        return "redirect:/cliente/dashboard";
+    }
 
+    @PostMapping("/subsanar/{id}")
+    public String handleSubsanacion(
+            @PathVariable Long id,
+            @RequestParam("fileDniOtorgante")        MultipartFile fileDniOtorgante,
+            @RequestParam("fileReciboOtorgante")     MultipartFile fileReciboOtorgante,
+            @RequestParam("fileDniRepresentante")    MultipartFile fileDniRepresentante,
+            @RequestParam("fileReciboRepresentante") MultipartFile fileReciboRepresentante,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null) return "redirect:/login";
+
+        try {
+            appointmentService.subsanarConDocumentos(
+                    id, fileDniOtorgante, fileReciboOtorgante,
+                    fileDniRepresentante, fileReciboRepresentante,
+                    loggedUser.getId());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Documentos de subsanacion enviados correctamente. El especialista los revisara.");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al subir documentos: " + e.getMessage());
+        }
         return "redirect:/cliente/dashboard";
     }
 }
