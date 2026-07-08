@@ -1,5 +1,7 @@
 package com.turnosmart.turnosmart_backend.controller;
 
+import com.turnosmart.turnosmart_backend.entity.Appointment;
+import com.turnosmart.turnosmart_backend.entity.AppointmentStatus;
 import com.turnosmart.turnosmart_backend.entity.Lawyer;
 import com.turnosmart.turnosmart_backend.entity.User;
 import com.turnosmart.turnosmart_backend.repository.AppointmentRepository;
@@ -8,12 +10,18 @@ import com.turnosmart.turnosmart_backend.service.AppointmentService;
 import com.turnosmart.turnosmart_backend.service.LawyerService;
 import com.turnosmart.turnosmart_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -30,11 +38,98 @@ public class AdminController {
     public String dashboard(@RequestParam(name = "filter", defaultValue = "mes") String filter, Model model) {
         model.addAttribute("metrics", analyticsService.getDashboardMetrics(filter));
         model.addAttribute("currentFilter", filter);
-
-
         model.addAttribute("tramites", appointmentRepository.findAllWithDetails());
-
         return "admin/dashboard";
+    }
+
+    @GetMapping("/reportes")
+    public String reportes(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            Model model,
+            Principal principal) {
+
+        if (principal != null) {
+            User user = userService.findByEmail(principal.getName());
+            model.addAttribute("user", user);
+        }
+
+        if (desde == null) desde = LocalDate.now().withDayOfMonth(1);
+        if (hasta == null) hasta = LocalDate.now();
+
+        LocalDateTime desdeDateTime = desde.atStartOfDay();
+        LocalDateTime hastaDateTime = hasta.atTime(LocalTime.MAX);
+
+        List<Appointment> tramites = appointmentRepository
+                .findByCreatedAtBetween(desdeDateTime, hastaDateTime);
+
+        long totalTramites = tramites.size();
+
+        long countPendientes = tramites.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.PENDIENTE_EVALUACION
+                        || a.getStatus() == AppointmentStatus.REVISION)
+                .count();
+
+        long countProceso = tramites.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.CONFORME
+                        || a.getStatus() == AppointmentStatus.DOCUMENTOS_ENVIADOS
+                        || a.getStatus() == AppointmentStatus.REGULARIZAR
+                        || a.getStatus() == AppointmentStatus.PROCESO_DETENIDO)
+                .count();
+
+        long countFinalizados = tramites.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.ENTREGADO)
+                .count();
+
+        long countCancelados = tramites.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.CANCELADO)
+                .count();
+
+        double recaudacion = tramites.stream()
+                .filter(a -> Boolean.TRUE.equals(a.getIsPaid()))
+                .mapToDouble(a -> {
+                    String nombre = a.getProcedureType().getName();
+                    if (nombre.contains("Representación")) return 300.0;
+                    if (nombre.contains("Poderes"))        return 150.0;
+                    return 0.0;
+                })
+                .sum();
+
+        Map<String, Long> porEstado = tramites.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getStatus().getLabel(),
+                        Collectors.counting()));
+
+        List<String> estadosLabels    = List.copyOf(porEstado.keySet());
+        List<Long>   estadosCantidades = estadosLabels.stream()
+                .map(porEstado::get).collect(Collectors.toList());
+
+        Map<String, Long> porTipo = tramites.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getProcedureType().getName(),
+                        Collectors.counting()));
+
+        List<String> tiposLabels    = List.copyOf(porTipo.keySet());
+        List<Long>   tiposCantidades = tiposLabels.stream()
+                .map(porTipo::get).collect(Collectors.toList());
+
+        model.addAttribute("tramites",          tramites);
+        model.addAttribute("totalTramites",     totalTramites);
+        model.addAttribute("countPendientes",   countPendientes);
+        model.addAttribute("countProceso",      countProceso);
+        model.addAttribute("countFinalizados",  countFinalizados);
+        model.addAttribute("countCancelados",   countCancelados);
+        model.addAttribute("recaudacionTotal",  String.format("%.2f", recaudacion));
+
+        model.addAttribute("estadosLabels",     estadosLabels);
+        model.addAttribute("estadosCantidades", estadosCantidades);
+        model.addAttribute("tiposLabels",       tiposLabels);
+        model.addAttribute("tiposCantidades",   tiposCantidades);
+
+        model.addAttribute("desde", desde);
+        model.addAttribute("hasta", hasta);
+
+        return "admin/reportes";
     }
 
     @GetMapping("/usuarios")
@@ -88,22 +183,18 @@ public class AdminController {
     @PostMapping("/abogados/guardar")
     public String guardarAbogado(@ModelAttribute Lawyer lawyer, Model model) {
         User user = lawyer.getUser();
-
         try {
             if (lawyer.getId() != null) {
                 Lawyer existingLawyer = lawyerService.findById(lawyer.getId());
                 User existingUser = existingLawyer.getUser();
-
                 existingUser.setFirstName(user.getFirstName());
                 existingUser.setLastName(user.getLastName());
                 existingUser.setEmail(user.getEmail());
                 existingUser.setDni(user.getDni());
                 existingUser.setPhone(user.getPhone());
-
                 existingLawyer.setColegiatura(lawyer.getColegiatura());
                 existingLawyer.setSpecialization(lawyer.getSpecialization());
                 existingLawyer.setBio(lawyer.getBio());
-
                 lawyerService.save(existingLawyer);
             } else {
                 user.setEnabled(true);
@@ -112,9 +203,7 @@ public class AdminController {
                 }
                 lawyerService.save(lawyer);
             }
-
             return "redirect:/admin/abogados?success";
-
         } catch (com.turnosmart.turnosmart_backend.exception.BusinessException e) {
             model.addAttribute("error", e.getMessage());
             model.addAttribute("lawyer", lawyer);

@@ -2,15 +2,23 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes Globales | Turnosmart Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
         .main-content { padding: 2rem; }
-        .chart-container { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .stat-card { border: none; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .chart-container { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.07); margin-bottom: 2rem; }
+        .stat-card { border: none; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .filter-card { background: white; border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.07); margin-bottom: 1.5rem; }
+        .table-card { background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); overflow: hidden; }
+        .table thead th { background-color: #f8fafc; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+        .table tbody td { font-size: 0.875rem; vertical-align: middle; }
+        .status-pill { font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 50px; text-transform: uppercase; white-space: nowrap; }
+        .table-hover tbody tr:hover { background-color: #f8fafc; }
     </style>
 </head>
 <body>
@@ -18,83 +26,235 @@
 <div class="container-fluid">
     <div class="row">
         <main class="col-12 main-content">
-            <h2 class="fw-bold mb-4">Reportes Globales</h2>
 
-            <!-- Fila de Indicadores -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-0">Reportes Globales</h2>
+                    <p class="text-muted small mb-0">Monitoreo de trámites y métricas del sistema</p>
+                </div>
+                <a th:href="@{/admin/dashboard}" class="btn btn-light rounded-pill px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+                </a>
+            </div>
+
+            <!-- FILTRO POR FECHAS -->
+            <div class="filter-card">
+                <form th:action="@{/admin/reportes}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Desde</label>
+                        <input type="date" name="desde" class="form-control rounded-3"
+                               th:value="${desde}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Hasta</label>
+                        <input type="date" name="hasta" class="form-control rounded-3"
+                               th:value="${hasta}">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary rounded-3 w-100 fw-semibold">
+                            <i class="bi bi-funnel-fill me-1"></i> Filtrar
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a th:href="@{/admin/reportes}" class="btn btn-outline-secondary rounded-3 w-100 fw-semibold">
+                            <i class="bi bi-x-circle me-1"></i> Limpiar
+                        </a>
+                    </div>
+                    <div class="col-md-3 text-muted small d-flex align-items-end pb-1">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Mostrando <strong class="mx-1" th:text="${totalTramites}">0</strong> trámites en el período
+                    </div>
+                </form>
+            </div>
+
+            <!-- MÉTRICAS DE RESUMEN -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card p-3 border-start border-primary border-4">
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Total Trámites</span>
+                        <h2 class="fw-bold mb-0 text-primary" th:text="${totalTramites ?: 0}">0</h2>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card p-3 border-start border-warning border-4">
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">En Revisión</span>
+                        <h2 class="fw-bold mb-0 text-warning" th:text="${countPendientes ?: 0}">0</h2>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card p-3 border-start border-success border-4">
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Completados</span>
+                        <h2 class="fw-bold mb-0 text-success" th:text="${countFinalizados ?: 0}">0</h2>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card p-3 border-start border-info border-4">
+                        <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Recaudación</span>
+                        <h2 class="fw-bold mb-0 text-info" th:text="'S/ ' + ${recaudacionTotal ?: '0.00'}">S/ 0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS -->
             <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="card stat-card p-3 border-start border-primary border-5">
-                        <span class="text-muted small fw-bold">TOTAL TRÁMITES</span>
-                        <h2 class="fw-bold mb-0" th:text="${totalTramites ?: 0}">0</h2>
+                <div class="col-md-5">
+                    <div class="chart-container h-100">
+                        <h6 class="fw-bold mb-3 text-dark">Distribución por Estado</h6>
+                        <div th:if="${#lists.isEmpty(tramites)}" class="text-center text-muted py-5">
+                            <i class="bi bi-bar-chart-line fs-1 opacity-25 d-block mb-2"></i>
+                            Sin datos en el período seleccionado
+                        </div>
+                        <canvas th:if="${not #lists.isEmpty(tramites)}" id="statusChart" style="max-height: 280px;"></canvas>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card stat-card p-3 border-start border-success border-5">
-                        <span class="text-muted small fw-bold">RECAUDACIÓN</span>
-                        <h2 class="fw-bold mb-0 text-success" th:text="'S/ ' + ${recaudacionTotal ?: 0}">S/ 0</h2>
+                <div class="col-md-7">
+                    <div class="chart-container h-100">
+                        <h6 class="fw-bold mb-3 text-dark">Trámites por Tipo</h6>
+                        <div th:if="${#lists.isEmpty(tramites)}" class="text-center text-muted py-5">
+                            <i class="bi bi-bar-chart-line fs-1 opacity-25 d-block mb-2"></i>
+                            Sin datos en el período seleccionado
+                        </div>
+                        <canvas th:if="${not #lists.isEmpty(tramites)}" id="typesChart" style="max-height: 280px;"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="chart-container">
-                        <h5 class="fw-bold mb-4">Distribución por Estados</h5>
-                        <canvas id="statusChart"></canvas>
-                    </div>
+            <!-- TABLA DETALLADA DE TRÁMITES -->
+            <div class="table-card">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-table me-2 text-primary"></i>Detalle de Trámites
+                    </h6>
+                    <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3"
+                          th:text="${totalTramites} + ' registros'">0 registros</span>
                 </div>
-                <div class="col-md-6">
-                    <div class="chart-container">
-                        <h5 class="fw-bold mb-4">Trámites más Solicitados</h5>
-                        <canvas id="typesChart"></canvas>
-                    </div>
+
+                <div th:if="${#lists.isEmpty(tramites)}" class="p-5 text-center text-muted">
+                    <i class="bi bi-inbox fs-1 opacity-25 d-block mb-2"></i>
+                    No se encontraron trámites en el período seleccionado.
+                </div>
+
+                <div th:if="${not #lists.isEmpty(tramites)}" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th class="ps-4">Ticket</th>
+                            <th>Cliente</th>
+                            <th>Tipo de Trámite</th>
+                            <th>Especialista</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Estado</th>
+                            <th class="text-center">Pago</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${tramites}">
+                            <td class="ps-4">
+                                    <span class="badge bg-light text-primary border fw-bold"
+                                          th:text="${t.ticketNumber}">TS-XXXX</span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold" th:text="${t.client.firstName + ' ' + t.client.lastName}">Cliente</div>
+                                <small class="text-muted" th:text="'DNI: ' + ${t.client.dni}">DNI</small>
+                            </td>
+                            <td th:text="${t.procedureType.name}">Tipo</td>
+                            <td th:text="${t.lawyer.user.firstName + ' ' + t.lawyer.user.lastName}">Especialista</td>
+                            <td>
+                                <span th:text="${#temporals.format(t.createdAt, 'dd/MM/yyyy')}">--/--/----</span>
+                                <br>
+                                <small class="text-muted" th:text="${#temporals.format(t.createdAt, 'HH:mm')}">--:--</small>
+                            </td>
+                            <td>
+                                    <span class="status-pill"
+                                          th:classappend="${t.status.getColorClass()}"
+                                          th:text="${t.status.getLabel()}">Estado</span>
+                            </td>
+                            <td class="text-center">
+                                    <span th:if="${t.isPaid}" class="badge bg-success-subtle text-success-emphasis rounded-pill px-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Pagado
+                                    </span>
+                                <span th:unless="${t.isPaid}" class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill px-2">
+                                        Pendiente
+                                    </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </main>
     </div>
 </div>
 
-<!-- EL TRUCO PARA THYMELEAF ESTÁ AQUÍ -->
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // 1. Gráfico de Estados
-    const ctxStatus = document.getElementById('statusChart').getContext('2d');
-    new Chart(ctxStatus, {
-        type: 'doughnut',
-        data: {
-            labels: ['Pendientes', 'En Proceso', 'Finalizados', 'Cancelados'],
-            datasets: [{
-                // Inyectamos valores de Spring; si son nulos, ponemos 0
-                data: [
-                    /*[[${countPendientes ?: 0}]]*/ 0,
-                    /*[[${countProceso ?: 0}]]*/ 0,
-                    /*[[${countFinalizados ?: 0}]]*/ 0,
-                    /*[[${countCancelados ?: 0}]]*/ 0
-                ],
-                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444']
-            }]
-        }
-    });
+    const hayDatos = /*[[${not #lists.isEmpty(tramites)}]]*/ false;
 
-    // 2. Gráfico de Tipos de Trámite
-    const ctxTypes = document.getElementById('typesChart').getContext('2d');
+    if (hayDatos) {
+        const estadosLabels    = /*[[${estadosLabels}]]*/ [];
+        const estadosCantidades = /*[[${estadosCantidades}]]*/ [];
+        const tiposLabels       = /*[[${tiposLabels}]]*/ [];
+        const tiposCantidades   = /*[[${tiposCantidades}]]*/ [];
 
-    // Usamos comentarios de Thymeleaf para que el JS sea válido incluso si falla la inyección
-    const nombresLabels = /*[[${nombresTramites}]]*/ ['Sin datos'];
-    const cantidadesData = /*[[${cantidadesTramites}]]*/ [0];
+        // Paleta de colores para los estados
+        const coloresDona = [
+            '#f59e0b', '#3b82f6', '#10b981', '#ef4444',
+            '#0ea5e9', '#6f42c1', '#6366f1', '#64748b'
+        ];
 
-    new Chart(ctxTypes, {
-        type: 'bar',
-        data: {
-            labels: nombresLabels,
-            datasets: [{
-                label: 'Cantidad',
-                data: cantidadesData,
-                backgroundColor: '#6366f1'
-            }]
-        }
-    });
+        // Gráfico de dona — estados
+        new Chart(document.getElementById('statusChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: estadosLabels,
+                datasets: [{
+                    data: estadosCantidades,
+                    backgroundColor: coloresDona.slice(0, estadosLabels.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } }
+                }
+            }
+        });
+
+        // Gráfico de barras — tipos de trámite
+        new Chart(document.getElementById('typesChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: tiposLabels,
+                datasets: [{
+                    label: 'Cantidad de trámites',
+                    data: tiposCantidades,
+                    backgroundColor: '#6366f1',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
 
     /*]]>*/
 </script>

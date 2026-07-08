@@ -19,8 +19,6 @@ public class PageController {
         return "login";
     }
 
-    
-
     @GetMapping("/mis-tramites")
     public String misTramites(Model model, Principal principal) {
         if (principal != null) {
@@ -28,14 +26,5 @@ public class PageController {
             model.addAttribute("user", user);
         }
         return "mis-tramites";
-    }
-
-    @GetMapping("/admin/reportes")
-    public String reportes(Model model, Principal principal) {
-        if (principal != null) {
-            User user = userService.findByEmail(principal.getName());
-            model.addAttribute("user", user);
-        }
-        return "admin/reportes";
     }
 }
