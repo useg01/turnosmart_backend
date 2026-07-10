@@ -150,6 +150,11 @@
                                 <option value="">Seleccione el trámite...</option>
                                 <option th:each="p : ${procedimientos}" th:value="${p.id}" th:text="${p.name}"></option>
                             </select>
+
+                            <div id="precioTramite" class="alert alert-success mt-3" style="display:none;">
+                                <strong>Precio del trámite:</strong>
+                                <span id="montoTramite">S/ 0.00</span>
+                            </div>
                         </div>
 
                         <div id="seccionRepresentacion" class="col-12" style="display: none;">
@@ -419,12 +424,27 @@
         if (!combo.value) return;
 
         const selectedText = combo.options[combo.selectedIndex].text.toLowerCase();
-        const seccionCUS05 = document.getElementById('seccionRepresentacion');
 
+        const seccionCUS05 = document.getElementById('seccionRepresentacion');
+        const precioDiv = document.getElementById('precioTramite');
+        const montoSpan = document.getElementById('montoTramite');
+
+        // Mostrar módulo de representación legal
         if (selectedText.includes('representación') || selectedText.includes('representacion')) {
             seccionCUS05.style.display = 'block';
-        } else {
+            precioDiv.style.display = 'block';
+            montoSpan.innerText = 'S/ 300.00';
+        }
+        // Mostrar precio para poderes
+        else if (selectedText.includes('poder')) {
             seccionCUS05.style.display = 'none';
+            precioDiv.style.display = 'block';
+            montoSpan.innerText = 'S/ 150.00';
+        }
+        // Otros trámites
+        else {
+            seccionCUS05.style.display = 'none';
+            precioDiv.style.display = 'none';
         }
     }
 
