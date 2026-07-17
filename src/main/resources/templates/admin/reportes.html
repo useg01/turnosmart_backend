@@ -125,8 +125,14 @@
                     <h6 class="fw-bold mb-0">
                         <i class="bi bi-table me-2 text-primary"></i>Detalle de Trámites
                     </h6>
-                    <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3"
-                          th:text="${totalTramites} + ' registros'">0 registros</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill px-3"
+                              th:text="${totalTramites} + ' registros'">0 registros</span>
+                        <a th:href="@{/admin/reportes/exportar(desde=${desde},hasta=${hasta})}"
+                           class="btn btn-success btn-sm rounded-pill px-3 fw-semibold">
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar Excel
+                        </a>
+                    </div>
                 </div>
 
                 <div th:if="${#lists.isEmpty(tramites)}" class="p-5 text-center text-muted">

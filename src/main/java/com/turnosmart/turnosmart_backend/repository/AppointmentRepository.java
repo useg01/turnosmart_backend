@@ -42,10 +42,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a.lawyer.id, COUNT(a) FROM Appointment a GROUP BY a.lawyer.id")
     List<Object[]> countByLawyer();
 
-    // ==========================================================
-    // MÉTODOS ADICIONALES PARA CONTEOS FILTRADOS POR ANALYTICS
-    // ==========================================================
-
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     long countByStatusAndCreatedAtBetween(AppointmentStatus status, LocalDateTime start, LocalDateTime end);
