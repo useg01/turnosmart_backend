@@ -6,208 +6,349 @@
     <title>Login - TurnoSmart</title>
     <!-- Iconos para consistencia visual -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --main-bg: #f8fafc; /* Gris azulado muy claro de la captura */
-            --text-main: #1e293b;
+            /* Colores de la Notaría TurnoSmart basados en el diseño elegante */
+            --primary-color: #2b4c7e; /* Azul notarial sobrio */
+            --primary-hover: #1a3256;
+            --btn-blue: #3b66a6;
+            --input-bg: #f4f4f6;
+            --text-main: #1c2434;
             --text-muted: #64748b;
             --white: #ffffff;
-            --border-color: #e2e8f0;
-            /* Sombra multinivel idéntica a la del dashboard */
-            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            --border-color: #cbd5e1;
+            --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--main-bg);
+            /* Fondo con gradiente azul y círculos difuminados abstractos de la captura original */
+            background: linear-gradient(135deg, #2b7fff 0%, #1a56cc 50%, #5c9eff 100%);
+            position: relative;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
+            padding: 1rem;
         }
 
-        .login-card {
+        /* Elementos decorativos de fondo (burbujas azules de la captura) */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            filter: blur(30px);
+            z-index: 0;
+        }
+        body::before { width: 300px; height: 300px; top: 10%; left: 5%; }
+        body::after { width: 400px; height: 400px; bottom: 5%; right: 10%; }
+
+        /* Estructura del Contenedor Principal (Caja Dividida Estilo ADEX) */
+        .login-container {
+            position: relative;
+            z-index: 10;
             background: var(--white);
-            padding: 3.5rem 2.5rem;
-            border-radius: 24px; /* Bordes suaves como en el Módulo de Gestión */
+            border-radius: 30px;
             box-shadow: var(--card-shadow);
             width: 100%;
-            max-width: 420px;
-            text-align: center;
+            max-width: 1050px;
+            height: 520px;
+            display: table; /* Usamos estructura de tabla para compatibilidad de renderizado limpio */
+            table-layout: fixed;
+            overflow: hidden;
         }
 
-        /* Icono de marca circular */
-        .brand-logo {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
-            color: white;
-            border-radius: 18px;
+        /* Panel Izquierdo: Formulario de Login */
+        .login-form-side {
+            display: table-cell;
+            width: 46%;
+            background: var(--white);
+            vertical-align: middle;
+            padding: 2.5rem 3.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Panel Derecho: Imagen Corporativa */
+        .login-image-side {
+            display: table-cell;
+            width: 54%;
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1200&auto=format&fit=crop'); /* Imagen premium de abogados en oficina notarial */
+            background-size: cover;
+            background-position: center center;
+            vertical-align: bottom;
+        }
+
+        /* Efecto de división de ola (Wave) idéntico a la captura */
+        .login-form-side::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: -60px;
+            width: 120px;
+            height: 100%;
+            background: var(--white);
+            border-radius: 100% 0% 0% 100% / 50% 0% 0% 50%;
+            z-index: 1;
+        }
+
+        /* Marca y Logotipo Notarial */
+        .brand-header {
+            position: relative;
+            z-index: 5;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 1.8rem;
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.25);
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
 
-        h2 {
-            color: var(--text-main);
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
+        .brand-logo-icon {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
             font-weight: 700;
-            letter-spacing: -0.025em;
+            color: var(--primary-color);
+            line-height: 1;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Títulos Internos */
+        h2 {
+            position: relative;
+            z-index: 5;
+            color: var(--text-main);
+            font-size: 1.6rem;
+            margin: 0 0 0.25rem 0;
+            font-weight: 700;
         }
 
         p.subtitle {
+            position: relative;
+            z-index: 5;
             color: var(--text-muted);
-            margin-bottom: 2.5rem;
-            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
         }
 
+        /* Formulario e Inputs estilizados como la captura original */
         form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            text-align: left;
+            position: relative;
+            z-index: 5;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
+        .mb-3 {
+            margin-bottom: 1.25rem;
+            position: relative;
         }
 
-        label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-main);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-left: 0.2rem;
-        }
-
-        input, select {
+        .form-control {
             width: 100%;
-            padding: 0.8rem 1.2rem;
-            border: 1px solid var(--border-color);
-            border-radius: 12px; /* Redondeado tipo SaaS */
+            padding: 1rem 1.2rem;
+            border: none;
+            border-bottom: 1px solid var(--border-color); /* Estilo de línea sutil */
+            border-radius: 8px;
             font-size: 0.95rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: var(--white);
+            background-color: var(--input-bg);
             color: var(--text-main);
+            transition: all 0.3s ease;
         }
 
-        input:focus, select:focus {
+        .form-control:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            background-color: #eef2f6;
+            border-bottom: 2px solid var(--primary-color);
         }
 
-        button {
+        /* Marcadores de posición simulando las etiquetas integradas de la captura */
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Etiquetas invisibles visualmente pero presentes para estructura */
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        /* Botón Iniciar Sesión idéntico (Azul difuminado con curvas suaves) */
+        .btn-primary {
             width: 100%;
-            padding: 1rem;
-            background-color: var(--primary-color);
+            padding: 0.95rem;
+            background-color: #6ea4f7; /* Tono azul claro de la captura original para el botón */
+            background: linear-gradient(to right, #6ea4f7, #538ee6);
             color: white;
             border: none;
-            border-radius: 14px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             margin-top: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 10px rgba(83, 142, 230, 0.3);
         }
 
-        button:hover {
-            background-color: var(--primary-hover);
+        .btn-primary:hover {
+            filter: brightness(0.95);
             transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.98);
         }
 
         .footer-link {
-            margin-top: 2rem;
-            display: block;
-            color: var(--primary-color);
+            position: relative;
+            z-index: 5;
+            margin-top: 1.5rem;
+            display: inline-block;
+            color: var(--btn-blue);
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: color 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .footer-link:hover {
-            color: var(--primary-hover);
             text-decoration: underline;
         }
 
-        /* Alertas estilizadas */
+        /* Tarjeta flotante translúcida sobre la foto (Glassmorphism de la captura) */
+        .glass-overlay-card {
+            position: absolute;
+            bottom: 35px;
+            left: 5%;
+            right: 5%;
+            background: rgba(139, 67, 85, 0.65); /* Tono rojizo/marrón traslúcido elegante */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.2rem 2rem;
+            color: var(--white);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 10;
+        }
+
+        .glass-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.03em;
+        }
+
+        .glass-desc {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* Alertas estilizadas compactas */
         .alert {
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
+            position: relative;
+            z-index: 5;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 0.5rem;
-            border: 1px solid transparent;
         }
         .alert-success {
             background: #f0fdf4;
             color: #166534;
-            border-color: #bbf7d0;
+            border: 1px solid #bbf7d0;
         }
         .alert-danger {
             background: #fef2f2;
             color: #991b1b;
-            border-color: #fecaca;
+            border: 1px solid #fecaca;
         }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <div class="brand-logo">
-        <i class="bi bi-shield-lock-fill"></i>
-    </div>
-    <h2>Bienvenido</h2>
-    <p class="subtitle">Ingresa tus credenciales para acceder</p>
+<div class="login-container">
 
-    <!-- Alerta de Error -->
-    <div th:if="${error}" class="alert alert-danger">
-        <i class="bi bi-exclamation-circle-fill"></i>
-        <span th:text="${error}">Credenciales incorrectas</span>
-    </div>
+    <!-- LADO IZQUIERDO: FORMULARIO -->
+    <div class="login-form-side">
 
-    <!-- Alerta de Éxito -->
-    <div th:if="${param.success}" class="alert alert-success">
-        <i class="bi bi-check-circle-fill"></i>
-        ¡Registro completado con éxito!
-    </div>
-
-    <form th:action="@{/login}" method="post">
-        <div class="mb-3">
-            <label class="form-label">Correo Electrónico</label>
-            <input type="email" name="email" class="form-control" required>
+        <!-- Encabezado de marca con Logo de Notaría -->
+        <div class="brand-header">
+            <div class="brand-logo-icon">
+                <i class="bi bi-balance-scale"></i> <!-- Icono de la justicia / notarial -->
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">TurnoSmart</span>
+                <span class="brand-subtitle">Servicios Notariales Digitales</span>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
-    </form>
 
-    <a href="/registro" class="footer-link">¿No tienes cuenta? Regístrate aquí</a>
+        <h2>Bienvenido</h2>
+        <p class="subtitle">Accede a todos tus trámites desde un solo lugar.</p>
+
+        <!-- Alerta de Error (Lógica intacta) -->
+        <div th:if="${error}" class="alert alert-danger">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span th:text="${error}">Credenciales incorrectas</span>
+        </div>
+
+        <!-- Alerta de Éxito (Lógica intacta) -->
+        <div th:if="${param.success}" class="alert alert-success">
+            <i class="bi bi-check-circle-fill"></i>
+            ¡Registro completado con éxito!
+        </div>
+
+        <!-- Formulario (Estructura interna y lógica intacta) -->
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" name="email" class="form-control" placeholder="ejemplo@notaria.com" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+        </form>
+
+        <a href="/registro" class="footer-link">¿No tienes cuenta? Regístrate aquí</a>
+    </div>
+
+    <!-- LADO DERECHO: IMAGEN Y BANNER FLOTANTE -->
+    <div class="login-image-side">
+        <!-- Cuadro con efecto desenfoque (Glassmorphic) de la captura original -->
+        <div class="glass-overlay-card">
+            <div class="glass-title">Portal Clientes TurnoSmart</div>
+            <div class="glass-desc">Acceso seguro a tus firmas, actas y escrituras virtuales.</div>
+        </div>
+    </div>
+
 </div>
 
 </body>
